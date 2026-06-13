@@ -22,3 +22,16 @@ we beat forgetting.
   telling: your effort is the chisel.)
 - **Recap cue (ask next time):** "Trail in the grass — what makes the path deeper,
   looking at it or walking it?"
+- **Status:** ✓ Derived by the user (2026-06-13) — chose "B, the struggle one" and
+  reasoned it out. Earned, not just told.
+
+---
+
+## Lesson 2 — Why a tired brain can't learn *(seeded, for when fresh)*
+- **Where it came from:** the user's own observation — *"I was extremely tired and
+  my brain was slowing down."* A real insight, spotted in themselves.
+- **Question to explore next:** if struggle carves memory, why does a *tired* brain
+  carve so poorly — and what is sleep actually *for*?
+- **Where we're headed (don't reveal — let them derive):** a tired brain encodes
+  weakly, and sleep is when the day's faint trails get reinforced. So rest isn't
+  lazy — it's literally part of learning.
