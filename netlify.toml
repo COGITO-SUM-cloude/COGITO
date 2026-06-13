@@ -1,0 +1,3 @@
+# Cogito — static site config. No build step; publish the web/ directory as-is.
+[build]
+  publish = "web"
