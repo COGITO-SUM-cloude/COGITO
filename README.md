@@ -28,7 +28,7 @@ The full machinery lives in [`skills/cogito-protocol/SKILL.md`](skills/cogito-pr
 ## Quick start
 
 ```bash
-git clone https://github.com/eduardocastanon27-tech/COGITO.git
+git clone https://github.com/COGITO-SUM-cloude/COGITO.git
 cd COGITO
 ./install.sh            # installs the skill into ~/.claude/skills/ and verifies the ledger
 ./install.sh --global-hook   # also auto-load the protocol in EVERY session, every repo
