@@ -1,0 +1,13 @@
+# Local, machine-specific Claude settings — never shared
+.claude/settings.local.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Transient
+*.tmp
+*.log
+node_modules/

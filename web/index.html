@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cogito — a metacognitive operating protocol</title>
+<meta name="description" content="Cogito is a metacognitive operating protocol for AI-assisted work: durable memory for a system that otherwise forgets. The user, the AI, and the tools as one coupled mind." />
+<meta property="og:title" content="Cogito" />
+<meta property="og:description" content="Durable memory and deliberate reasoning for AI-assisted work — the extended mind, made into a discipline." />
+<meta property="og:type" content="website" />
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg-soft: #11151c;
+    --line: #1f2630;
+    --fg: #e7edf5;
+    --muted: #94a3b8;
+    --accent: #7dd3fc;
+    --accent-2: #a78bfa;
+    --glow: 0 0 0 1px rgba(125,211,252,.12), 0 12px 40px -12px rgba(125,211,252,.25);
+    --maxw: 920px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(167,139,250,.10), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(125,211,252,.08), transparent 55%),
+      var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { padding: 96px 0 56px; text-align: center; }
+  .kicker {
+    display: inline-block; letter-spacing: .28em; text-transform: uppercase;
+    font-size: 12px; color: var(--muted); margin-bottom: 22px;
+  }
+  h1 {
+    font-size: clamp(48px, 11vw, 116px); line-height: .95; margin: 0 0 8px;
+    font-weight: 800; letter-spacing: -.03em;
+    background: linear-gradient(180deg, #fff, #b7c4d6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .live {
+    font-size: clamp(16px, 2.6vw, 22px); color: var(--muted); margin: 6px 0 0;
+    font-variant: small-caps; letter-spacing: .04em;
+  }
+  .live b { color: var(--accent); font-weight: 600; }
+  .live .cursor {
+    display: inline-block; width: .6ch; height: 1.05em; vertical-align: -2px;
+    margin-left: 2px; background: var(--accent); animation: blink 1.15s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .lede { max-width: 660px; margin: 26px auto 0; color: #c7d2e0; font-size: 18px; }
+
+  .cta { margin-top: 34px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--line); background: var(--bg-soft); color: var(--fg);
+    padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    transition: border-color .2s, transform .1s, box-shadow .2s;
+  }
+  .btn:hover { border-color: var(--accent); box-shadow: var(--glow); text-decoration: none; transform: translateY(-1px); }
+  .btn.primary { background: linear-gradient(180deg, #0b3a52, #082635); border-color: #1d5b7a; }
+
+  section { padding: 40px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 0 0 26px; font-weight: 700; }
+
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 20px; transition: border-color .2s, transform .12s;
+  }
+  .card:hover { border-color: #33414f; transform: translateY(-2px); }
+  .card .n { font-size: 12px; color: var(--accent-2); font-weight: 700; letter-spacing: .1em; }
+  .card h3 { margin: 6px 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  .stance { display: grid; gap: 16px; }
+  .stance p { margin: 0; padding-left: 18px; border-left: 2px solid var(--accent-2); color: #cdd7e4; }
+
+  pre {
+    background: #07090d; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; overflow: auto; font-size: 13.5px; line-height: 1.7;
+    color: #cbd5e1;
+  }
+  pre .c { color: #6b7a8d; }
+  pre .a { color: var(--accent); }
+
+  .ethos { background: linear-gradient(180deg, rgba(167,139,250,.06), transparent); }
+  .ethos p { color: #cdd7e4; max-width: 720px; }
+  .ethos .off { color: var(--muted); font-size: 14.5px; }
+
+  footer { padding: 48px 0 80px; color: var(--muted); font-size: 14px; text-align: center; border-top: 1px solid var(--line); }
+  footer .shared { color: #cdd7e4; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <span class="kicker">Extended-mind protocol</span>
+      <h1>Cogito</h1>
+      <p class="live"><b>Cogito is live</b> — what's our mission today?<span class="cursor"></span></p>
+      <p class="lede">A discipline for reasoning transparently, managing finite working memory deliberately, and treating the user, the AI, and the tools as <em>one coupled cognitive system</em>. It doesn't make the model smarter — it makes the system smarter, by turning the right strategies from incidental into deliberate.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/eduardocastanon27-tech/COGITO">View the repository →</a>
+        <a class="btn" href="#loop">The session loop</a>
+      </div>
+    </header>
+
+    <section id="stance">
+      <h2>Core stance</h2>
+      <div class="stance">
+        <p>Working memory is finite. Effective capacity = buffer size × compression quality × retrieval reliability. Attack the second two; never pretend the first is infinite.</p>
+        <p>The user is the only component with guaranteed persistence across sessions. Anything that must survive a session boundary lives in a file they keep — or it's at the mercy of automatic compression.</p>
+        <p>Honesty about capability boundaries is non-negotiable. If a strategy needs the user's action, say so explicitly — never simulate success.</p>
+      </div>
+    </section>
+
+    <section id="loop">
+      <h2>The session loop</h2>
+      <div class="grid">
+        <div class="card"><span class="n">01</span><h3>Greet + take the mission</h3><p>Open the session. Expect a vague goal — vague is the normal starting point, not a failure.</p></div>
+        <div class="card"><span class="n">02</span><h3>Interview to a spec</h3><p>Keep asking until scope, success, and constraints are concrete and the assumption-check clears ~80%.</p></div>
+        <div class="card"><span class="n">03</span><h3>Red-team the mission</h3><p>Critique the goal before serving it. A goal shipped un-critiqued is the most expensive error there is.</p></div>
+        <div class="card"><span class="n">04</span><h3>Build in verifiable increments</h3><p>Verify each step by its real outcome — the listening port, the file in <code>git ls-files</code> — never a proxy.</p></div>
+        <div class="card"><span class="n">05</span><h3>Self-update on every stumble</h3><p>The instant a correction or a layer-jumping bug occurs, capture the one-line lesson then and there.</p></div>
+        <div class="card"><span class="n">06</span><h3>Checkpoint + confirm</h3><p>Produce a state file and ask plainly: <em>"Is the mission accomplished?"</em> A "no" is the most valuable signal.</p></div>
+        <div class="card"><span class="n">07</span><h3>Finish-line review</h3><p>Progress → Critique → Solutions → Recommendations. Fold every fix back into durable memory.</p></div>
+        <div class="card"><span class="n">08</span><h3>The dividend</h3><p>A mistake turned into a <em>persisted</em> lesson doesn't recur — so each loop runs leaner than the last.</p></div>
+      </div>
+    </section>
+
+    <section id="memory">
+      <h2>Memory that compounds</h2>
+      <p style="color:#cdd7e4; max-width:720px; margin:0 0 18px;">Lessons are captured prospectively, one line each, and routed through the only durable write-path — a file the user owns. An empty ledger means the system is relearning its scars every session.</p>
+      <pre><span class="c"># skills/cogito-protocol/LESSONS.md</span>
+<span class="a">SYMPTOM</span> -> <span class="a">ROOT CAUSE</span> -> <span class="a">RULE</span>
+
+CLAUDE.md described always-on behavior but nothing ran it
+   -> prose describes; only a hook executes
+   -> wire the hook and install the skill on day one.</pre>
+    </section>
+
+    <section id="ethos" class="ethos">
+      <h2>Ethos</h2>
+      <p>This protocol is <strong>meant to be shared</strong> — anyone, human or AI, is free to learn from it and build on it. Point it at work that is honest and humane, that helps more than it harms. Prefer the efficient path to the wasteful one, the smallest sufficient compute, the change that lasts over the one rebuilt twice.</p>
+      <p class="off"><strong>Know when to set it down.</strong> Cogito serves the work and the people, never itself. If applying it ever does more harm than good, scale it back or retire it gracefully. A good tool carries the wisdom of its own off-switch.</p>
+    </section>
+
+    <footer>
+      <div class="shared">Free to learn from, adapt, and build on — MIT licensed.</div>
+      <div><a href="https://github.com/eduardocastanon27-tech/COGITO">github.com/eduardocastanon27-tech/COGITO</a></div>
+    </footer>
+
+  </div>
+</body>
+</html>
