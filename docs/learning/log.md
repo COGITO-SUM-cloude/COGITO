@@ -38,18 +38,24 @@ we beat forgetting.
 
 ---
 
-## Lesson 3 — Knowing a rule isn't the same as following it *(seeded — derive it)*
+## Lesson 3 — Knowing a rule isn't the same as following it
 - **Where it came from:** today, real and unflattering. I had the exact rule loaded
   ("don't use a self-matching `pkill`") and broke it anyway — then applied it correctly
   the second time, once it was cued right at the moment of acting.
-- **Question to explore (take a guess before reading on):** if I could clearly *recall*
-  the rule, why didn't recalling it make me *follow* it — and what would have made me?
-- **Where we're headed (don't reveal — let them derive):** a stored fact is *available*
-  but not automatically *accessible at the deciding moment*; the fix is to bind it to its
-  trigger ("when I'm about to stop a server → kill by PID"). Real names: the knowing–doing
-  gap; implementation intentions (if–then planning); availability vs. accessibility
-  (Bjork). Connects to Lesson 1: retrieval practice gets a memory *in*; an if–then cue
-  gets it *out* at the right moment.
+- **Plain version:** a stored rule is just an *input* to the decision, not an enforcer —
+  nothing makes it fire. In the moment, the *output* (the decision) can skip it: either it
+  never surfaced, or something else looked better. First time here, it never surfaced;
+  the second time, the failure forced a review that pulled the rule back up.
+- **The upgrade (so a failure isn't required first):** pre-bind the rule to its trigger —
+  "WHEN I'm about to stop a server → THEN kill by PID." A cue glued to the moment fires
+  *before* the slip instead of waiting for trial-and-error to surface it.
+- **Real names:** availability vs. accessibility (Bjork) — stored ≠ reachable when needed;
+  the knowing–doing gap; implementation intentions (if–then planning).
+- **Use it:** for any rule you keep breaking, write it as "when X → I do Y," tied to the
+  visible trigger, not as a fact filed away.
 - **Recap cue (ask next time):** "Fire extinguisher in the basement vs. bolted by the
   stove — what makes a known rule actually fire when it's needed?"
-- **Status:** seeded 2026-06-14, awaiting the user's own derivation.
+- **Status:** ✓ Derived by the user (2026-06-14). Their words: a rule "is just an input …
+  the true decision is in its output," with "no actual enforcer"; the second time worked
+  because the failure made it "review its knowledge and [find] there was a rule for it."
+  Reached the availability/accessibility idea on their own.
