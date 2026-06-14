@@ -2,7 +2,18 @@
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--headless", "--no-usage-statistics"]
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--headless",
+        "--no-usage-statistics",
+        "--executablePath",
+        "/root/.cache/cogito-eyes/chrome",
+        "--acceptInsecureCerts",
+        "--chrome-arg=--no-sandbox",
+        "--chrome-arg=--disable-setuid-sandbox",
+        "--chrome-arg=--ignore-certificate-errors"
+      ]
     }
   }
 }
