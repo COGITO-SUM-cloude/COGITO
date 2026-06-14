@@ -41,3 +41,18 @@ verify-by-pixels (#2) into durable structure, not good intentions.
 - "my website project" = the **paint site** (separate repo), not the Cogito public site.
 - Repeated the `pkill -f` self-kill scar despite it being loaded at session start — recall
   is not application; stop processes by PID or port check, never a self-matching pattern.
+
+## Addendum — unpublish + roadmap 2/3/4 (same session)
+- **Unpublish:** the Cogito site is already private. Not on Netlify. On Vercel it is
+  project `skills` (static), SSO-walled (public gets 401); the clean alias 404s; no public
+  production deploy. The public `idk-whatimdoing` is BIHO CMS, not Cogito. The Vercel MCP
+  here is read/deploy-only — toggling protection or deleting is dashboard-only. Decision:
+  keep it private as Cogito's hub until the owner says publish.
+- **#2 favicon:** added `web/favicon.svg` + `<link rel=icon>`; the page console is now
+  clean (verified with the eyes). Committed + pushed.
+- **#3 parallel agents:** wired the `design-qa` subagent into the web-build-loop as the
+  preferred parallel verification path; made context-packing an explicit Orient step.
+- **#4 branches:** there is no `main`; the default was the session branch
+  `claude/gallant-babbage-ig5y05`. Creating a real `main` from this branch AND
+  fast-forwarding the current default to it. Owner to flip the GitHub default to `main`
+  (dashboard — I cannot change that setting from here).

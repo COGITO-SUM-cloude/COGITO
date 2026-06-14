@@ -28,6 +28,9 @@ written) lie often enough to burn a whole session. Verify the outcome, not the p
   "This is not the Next.js you know" has cost us real time — do not code from memory of
   the framework's docs; verify the API the project actually has.
 - Identify the sources of truth. Every change flows from them.
+- **Pack the context before building.** Pull the relevant code, the contract, the
+  brand/content tokens, and the known pitfalls (the failure modes below) into view
+  first. One change made with the right context in hand beats three made blind.
 
 ### 1. Spec + plan (no code yet)
 - State the **single outcome that defines done**, in one sentence.
@@ -51,15 +54,20 @@ For every visual change:
   the page "loaded".
 - **Check desktop _and_ mobile widths.**
 
-How to get eyes:
-- **Preferred:** the `chrome-devtools` MCP — `navigate_page`, `take_screenshot`,
-  `list_network_requests`.
-- **In the Cogito repo:** `scripts/ensure-eyes.sh` (once) then `scripts/see.sh <url>`;
-  or hand off to the `design-qa` subagent for a full prioritized visual review.
+How to verify — prefer delegating to a parallel agent:
+- **Best — hand off to the `design-qa` subagent.** It loads the page, captures it at
+  desktop + mobile, reads the pixels + console + network, and returns a short
+  prioritized report (Blocker / Major / Minor + likely fix layer). Launch it as a
+  separate agent so verification runs **in parallel** while you keep building — and
+  because it is read-only, it can only diagnose, never "fix" a problem by hiding it.
+  Reach for it whenever a visual change needs checking ("QA the deploy", "does this
+  render", "check it on mobile").
+- **Direct (small checks):** the `chrome-devtools` MCP — `navigate_page`,
+  `take_screenshot`, `list_console_messages`, `list_network_requests`.
+- **In the Cogito repo:** `scripts/ensure-eyes.sh` (once), then `scripts/see.sh <url>`.
 - **Anywhere (fallback):** `npx @puppeteer/browsers install chrome@stable` once, then
-  run headless Chrome with `--no-sandbox` (running as root) and
-  `--ignore-certificate-errors` (the egress intercepts TLS). Screenshot at a desktop
-  width and a mobile width.
+  headless Chrome with `--no-sandbox` (root) + `--ignore-certificate-errors` (egress
+  intercepts TLS). Screenshot a desktop and a mobile width.
 
 ### 4. Checkpoint
 Record decisions, the live/preview URL, and any lesson (`SYMPTOM -> ROOT CAUSE -> RULE`)
