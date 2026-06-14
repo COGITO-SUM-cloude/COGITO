@@ -35,3 +35,21 @@ we beat forgetting.
 - **Where we're headed (don't reveal — let them derive):** a tired brain encodes
   weakly, and sleep is when the day's faint trails get reinforced. So rest isn't
   lazy — it's literally part of learning.
+
+---
+
+## Lesson 3 — Knowing a rule isn't the same as following it *(seeded — derive it)*
+- **Where it came from:** today, real and unflattering. I had the exact rule loaded
+  ("don't use a self-matching `pkill`") and broke it anyway — then applied it correctly
+  the second time, once it was cued right at the moment of acting.
+- **Question to explore (take a guess before reading on):** if I could clearly *recall*
+  the rule, why didn't recalling it make me *follow* it — and what would have made me?
+- **Where we're headed (don't reveal — let them derive):** a stored fact is *available*
+  but not automatically *accessible at the deciding moment*; the fix is to bind it to its
+  trigger ("when I'm about to stop a server → kill by PID"). Real names: the knowing–doing
+  gap; implementation intentions (if–then planning); availability vs. accessibility
+  (Bjork). Connects to Lesson 1: retrieval practice gets a memory *in*; an if–then cue
+  gets it *out* at the right moment.
+- **Recap cue (ask next time):** "Fire extinguisher in the basement vs. bolted by the
+  stove — what makes a known rule actually fire when it's needed?"
+- **Status:** seeded 2026-06-14, awaiting the user's own derivation.
