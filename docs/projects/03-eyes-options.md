@@ -29,3 +29,12 @@
 - Browserbase (hosted browser MCP): https://mcp.directory/blog/browserbase-vs-browserless-vs-hyperbrowser-vs-anchor-2026
 - ProofShot (give coding agents eyes): https://github.com/AmElmo/proofshot
 - Top 5 browser-automation MCP servers (2026): https://www.webfuse.com/blog/the-top-5-best-mcp-servers-for-ai-agent-browser-automation
+
+## Decision + status (2026-06-14)
+- **Chosen:** option 2 — open egress + Chrome DevTools MCP (most powerful; full screenshots + console + network).
+- **Staged by Cogito:** `.mcp.json` at repo root defines the `chrome-devtools` server (`npx chrome-devtools-mcp@latest --headless --no-usage-statistics`). On the next session Claude Code should detect it and ask the owner to approve it.
+- **Remaining owner action:** open the environment's network policy to allow general outbound, then start a NEW session (the policy applies on new sessions only). Docs: code.claude.com/docs/en/claude-code-on-the-web.
+- **Then, to verify eyes:** navigate + `take_screenshot` on any public page (proves the loop), and read the image back.
+- **Separate fix to see the live site (not a login wall):** turn off Vercel Deployment Protection, or use the Vercel MCP access tool. "Live" = a stranger can load it.
+- **Note:** Chrome is fetched on first use, which needs the open egress; npm itself is already allowed.
+
