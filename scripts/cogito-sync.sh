@@ -22,7 +22,13 @@ if git clone --depth 1 --quiet "$REPO" "$tmp" 2>/dev/null && [ -f "$tmp/skills/c
   cp -f "$tmp/skills/cogito-protocol/SKILL.md"   "$DST/SKILL.md"
   cp -f "$tmp/skills/cogito-protocol/LESSONS.md" "$DST/LESSONS.md"
   n="$(grep -c '^- ' "$DST/LESSONS.md" 2>/dev/null || echo '?')"
-  echo "cogito: brain synced from the central repo — $n lessons loaded into this session"
+  # As a SessionStart hook, this stdout is injected into the session context — so
+  # PRINT the lessons here. Syncing to disk isn't enough; the session must actually
+  # start with them in mind. (Cheap at this size; swap to retrieval when it grows.)
+  echo "cogito: brain synced from the central repo — $n lessons now in context. Do NOT repeat these:"
+  echo "----- COGITO LESSONS  (SYMPTOM -> ROOT CAUSE -> RULE) -----"
+  grep '^- ' "$DST/LESSONS.md"
+  echo "----- end COGITO lessons -----"
 else
   echo "cogito: WARNING could not reach the central brain; using whatever is already in $DST" >&2
 fi
