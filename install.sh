@@ -33,6 +33,17 @@ else
   say "kept existing LESSONS.md (preserving accumulated lessons)"
 fi
 
+# --- 1b. Install companion skills (every other skill under skills/) -----------
+for src in "$REPO_DIR"/skills/*/; do
+  name="$(basename "$src")"
+  [ "$name" = "cogito-protocol" ] && continue
+  [ -f "$src/SKILL.md" ] || continue
+  dst="$CLAUDE_HOME/skills/$name"
+  mkdir -p "$dst"
+  cp -f "$src"/*.md "$dst"/
+  say "installed companion skill: $name"
+done
+
 # --- 2. Verify the ledger is writable AND survives a write (protocol §4b) -----
 probe="<!-- install-probe $(date -u +%Y-%m-%dT%H:%M:%SZ) $$ -->"
 printf '%s\n' "$probe" >> "$LEDGER"
