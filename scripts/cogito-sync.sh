@@ -1,34 +1,45 @@
 #!/usr/bin/env bash
-# Cogito brain sync — make THIS session (in ANY repo) start knowing every lesson.
+# Cogito brain sync — make THIS session (in ANY repo) start KNOWING every lesson.
 #
-# Pulls the canonical protocol + lessons from the PUBLIC Cogito repo into
-# ~/.claude/skills/cogito-protocol/. Read-only, anonymous, no token needed —
-# this is what lets a session in the paint repo (or any other) avoid repeating
-# a mistake recorded in a different repo's session.
+# Run as a SessionStart hook: it loads the protocol + lessons into ~/.claude AND
+# prints the lessons to stdout. A SessionStart hook's stdout is injected into the
+# session's context, so the session literally starts with the lessons in mind and
+# can't repeat a past mistake — syncing to disk alone is not enough.
 #
-# Drop-in for other repos: copy this file in and add a SessionStart hook that
-# runs it (see docs/cogito-everywhere.md). Writing NEW lessons back to the
-# central brain is a separate step (cogito-learn.sh / a one-time key).
+#   - Inside the central Cogito repo: uses the local, authoritative ledger
+#     (which may hold lessons not yet pushed).
+#   - In any other repo: clones the PUBLIC Cogito repo (anonymous, no token).
 set -euo pipefail
 
 DST="$HOME/.claude/skills/cogito-protocol"
-REPO="https://github.com/COGITO-SUM-cloude/COGITO.git"
+REPO_URL="https://github.com/COGITO-SUM-cloude/COGITO.git"
+SUB="skills/cogito-protocol"
 mkdir -p "$DST"
 
-tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
-
-if git clone --depth 1 --quiet "$REPO" "$tmp" 2>/dev/null && [ -f "$tmp/skills/cogito-protocol/LESSONS.md" ]; then
-  cp -f "$tmp/skills/cogito-protocol/SKILL.md"   "$DST/SKILL.md"
-  cp -f "$tmp/skills/cogito-protocol/LESSONS.md" "$DST/LESSONS.md"
-  n="$(grep -c '^- ' "$DST/LESSONS.md" 2>/dev/null || echo '?')"
-  # As a SessionStart hook, this stdout is injected into the session context — so
-  # PRINT the lessons here. Syncing to disk isn't enough; the session must actually
-  # start with them in mind. (Cheap at this size; swap to retrieval when it grows.)
-  echo "cogito: brain synced from the central repo — $n lessons now in context. Do NOT repeat these:"
-  echo "----- COGITO LESSONS  (SYMPTOM -> ROOT CAUSE -> RULE) -----"
-  grep '^- ' "$DST/LESSONS.md"
-  echo "----- end COGITO lessons -----"
+src=""
+proj="${CLAUDE_PROJECT_DIR:-$PWD}"
+root="$(git -C "$proj" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$root" ] && [ -f "$root/$SUB/LESSONS.md" ] \
+   && git -C "$root" remote -v 2>/dev/null | grep -qiE 'COGITO-SUM-cloude/COGITO(\.git)?'; then
+  cp -f "$root/$SUB/SKILL.md"   "$DST/SKILL.md"   2>/dev/null || true
+  cp -f "$root/$SUB/LESSONS.md" "$DST/LESSONS.md"
+  src="local central repo"
 else
-  echo "cogito: WARNING could not reach the central brain; using whatever is already in $DST" >&2
+  tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+  if git clone --depth 1 --quiet "$REPO_URL" "$tmp" 2>/dev/null && [ -f "$tmp/$SUB/LESSONS.md" ]; then
+    cp -f "$tmp/$SUB/SKILL.md"   "$DST/SKILL.md"
+    cp -f "$tmp/$SUB/LESSONS.md" "$DST/LESSONS.md"
+    src="public central repo"
+  fi
 fi
+
+if [ ! -f "$DST/LESSONS.md" ]; then
+  echo "cogito: WARNING could not load the brain (offline?); no lessons available this session" >&2
+  exit 0
+fi
+
+n="$(grep -c '^- ' "$DST/LESSONS.md" 2>/dev/null || echo '?')"
+echo "cogito: brain loaded from $src — $n lessons now in context. Do NOT repeat these:"
+echo "----- COGITO LESSONS  (SYMPTOM -> ROOT CAUSE -> RULE) -----"
+grep '^- ' "$DST/LESSONS.md"
+echo "----- end COGITO lessons -----"
