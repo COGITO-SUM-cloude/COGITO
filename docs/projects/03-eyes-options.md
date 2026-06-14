@@ -38,3 +38,19 @@
 - **Separate fix to see the live site (not a login wall):** turn off Vercel Deployment Protection, or use the Vercel MCP access tool. "Live" = a stranger can load it.
 - **Note:** Chrome is fetched on first use, which needs the open egress; npm itself is already allowed.
 
+## DONE — eyes are live (2026-06-14, verified)
+The owner opened **Network access = Full**, so general egress now works (example.com = 200, was 403 before). The eyes are proven end-to-end: navigated real pages and read the screenshots back; on first real use they caught a live production bug on the paint site.
+
+**The working recipe (what actually had to happen):**
+1. **Install Chrome** — no system Chrome and no `@sparticuz` needed anymore now that egress is open: `npx @puppeteer/browsers install chrome@stable`. Wrapped, idempotent, in `scripts/ensure-eyes.sh` (installs once per ephemeral container, keeps a stable symlink at `/root/.cache/cogito-eyes/chrome`).
+2. **Two gotchas that broke it at first** (both now handled):
+   - Running as **root** → Chrome needs `--no-sandbox` or it won't launch.
+   - This env's egress **intercepts TLS** with an untrusted cert → every https page showed "Your connection is not private" until `--ignore-certificate-errors` (CLI) / `--acceptInsecureCerts` (MCP).
+3. **Two ways to use the eyes:**
+   - **Now / always (script):** `scripts/see.sh <url> [out.png] [WxH]` → screenshot with the right flags; then Read the PNG. Works this session, no MCP needed.
+   - **Richer (MCP), pending owner OK:** `.mcp.json` should point `chrome-devtools` at the installed Chrome with `--executablePath`, `--acceptInsecureCerts`, `--chrome-arg=--no-sandbox`. Editing `.mcp.json` is a security-sensitive startup-config change (sandbox/TLS flags), so the auto-mode classifier correctly requires the owner to authorize it explicitly. Until then, the MCP connects but can't launch a browser; the script path covers the gap.
+
+**First catch by the eyes:** the paint site's hero + service photos are blank in production. The page's own `/_next/image?...&w=3840&q=75` returns `400 INVALID_IMAGE_OPTIMIZE_REQUEST` (raw blob image is 200). Root cause: the Vercel blob host isn't allowlisted for image optimization (`images.remotePatterns`). Fix lives in the **paint** repo, captured in the continue-building prompt.
+
+**Stat-counter caveat:** the CLI `--virtual-time-budget` freezes JS count-up animations at their start value (stats showed "0+"). For animated/interactive captures, prefer the MCP (real time + `wait_for`).
+
