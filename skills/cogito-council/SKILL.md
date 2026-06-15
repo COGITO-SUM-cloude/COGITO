@@ -53,6 +53,12 @@ real lens, ask each for its dissent and its uncertainty. A council that converge
 because everyone framed the question the same way is theatre — the value is in the
 disagreement the judge can then weigh.
 
+**Decorrelate the judge too.** The judge shares the panel's base model, so it can
+inherit the same blind spots. When you can, run the judge on a DIFFERENT model than
+the panel — a different Claude model now (pass `model:` when spawning `cogito-judge`),
+a non-Claude model once a key exists. A decorrelated judge is the cheapest way to
+catch the "one voice in triplicate" the panel cannot see in itself.
+
 ## Upgrade path (→ real OpenRouter Fusion, later)
 When a paid OpenRouter key — or a strong free non-Claude model — is available,
 replace one or more panelists with a call to `openrouter/fusion` (or a specific

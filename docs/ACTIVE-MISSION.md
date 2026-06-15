@@ -15,8 +15,8 @@ Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so 
 2. DONE — Stop-hook auto-save (above).
 3. DONE — `UserPromptSubmit` hook (`scripts/cogito-recall.sh`): auto-pulls the 1-3 lessons matching the prompt's keywords; verified live. Kill switch: `COGITO_RECALL=0`.
 4. DONE — Verify-before-store gate: the skill-check gate (`cogito-skill-check.sh`) + the documented rule + the lesson-probation buffer already existed (prior merge); ran the gate, all 5 skills pass. Confirmed working, not rebuilt.
-5. NEXT — Sharpen + rotate the council JUDGE (use a non-Claude model for it once a key exists).
-6. Wikilink + grep-backlink format — the prerequisite-graph the VR teacher walks.
+5. DONE — Sharpened the JUDGE: explicit same-base-model decorrelation check ("one voice in triplicate") + judge-model-rotation guidance in cogito-council. Rotating onto a non-Claude judge waits on a key (#7).
+6. NEXT — Wikilink + grep-backlink format — the prerequisite-graph the VR teacher walks.
 7. One FREE OpenRouter non-Claude voice in the council (needs a key; still $0).
 8. Obsidian "Bases"-style saved-query views.
 DEFER (panel agreed): paid Fusion, local Hermes (big GPU), MCP "expose the brain" server (for the VR client later), local embedding index, the Obsidian app.
