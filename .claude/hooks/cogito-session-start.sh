@@ -39,3 +39,11 @@ moment they happen (SYMPTOM -> ROOT CAUSE -> RULE), and close with a checkpoint
 + finish-line review, then ask whether the mission is accomplished.
 Durable lessons ledger: ~/.claude/skills/cogito-protocol/LESSONS.md
 CTX
+
+# Surface the active mission, if one is set, for instant cross-session resume.
+MISSION="$REPO/docs/ACTIVE-MISSION.md"
+if [ -f "$MISSION" ]; then
+  printf '\n----- ACTIVE MISSION (resume this) -----\n'
+  cat "$MISSION"
+  printf '\n----- end ACTIVE MISSION -----\n'
+fi
