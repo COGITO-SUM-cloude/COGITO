@@ -23,6 +23,7 @@ task matches — Voyager's description-keyed skill library, native to the harnes
 | **cogito-consolidate** | the lessons ledger passes ~60, a severe lesson lands, or you say `/consolidate` — ledger maintenance: merge redundant lessons + decay cold low-value ones into the archive (never delete). | helpers verified live; the merge/decay *procedure* awaits its first real trigger (ledger < 60) |
 | **adaptive-learning** | a concept surfaces in the work, the user asks how/why, or at session close — grow the user with small, plain-language teaching. Record: `docs/learning/log.md`. | in use |
 | **web-build-loop** | building, fixing, deploying, or QA-ing a website — prove the change by rendered pixels from a logged-out context + the asset's own HTTP status, never a green build. | battle-tested |
+| **cogito-council** | a hard or high-stakes question needs more than one pass (research, expert critique, design/architecture calls) — convene a Claude panel with distinct lenses + a judge, then synthesize. The free precursor to OpenRouter Fusion. | verified live — ran a 3-panel + judge council this session; the judge caught the panel's shared blind spot |
 
 ## Agents (subagents — fresh-context specialists)
 Subagents live in `.claude/agents/` and run in a *separate* context, which is their
@@ -32,6 +33,7 @@ value: they decorrelate a check or a search from the main thread.
 |---|---|
 | **cogito-reviewer** | before trusting a "done" / "fixed" / "works" claim — a fresh-context done-check that restates the definition-of-done and verifies it against grounded signals (command / test / build / HTTP / file / git), returning PASS / FAIL / UNVERIFIABLE with evidence. Read-only. |
 | **design-qa** | a web/visual change needs checking — loads the page through the "eyes", reads rendered pixels at desktop + mobile, inspects console/network, returns a prioritized findings report. Read-only. |
+| **cogito-judge** | inside a council — compare several independent panel answers and return the Fusion-style deliberation (consensus / contradictions / unique insights / blind spots) + a recommended synthesis. Weighs, never re-answers. Read-only. |
 
 (An agent invokable by `subagent_type` only appears after the session reloads its
 definitions — so verify a freshly-written agent on its next session, or proxy it
