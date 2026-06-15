@@ -34,7 +34,10 @@
   #mic.rec{background:var(--rec);border-color:#ef4444}
 </style>
 <script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+} }
 </script>
 </head>
 <body>
@@ -54,6 +57,7 @@
 
 <script type="module">
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ---------- shared speaking flag (drives the mouth) ----------
 const state = { speaking: false, mouth: 0 };
@@ -101,6 +105,28 @@ const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.7, 0.5, 8, 24),
   new THREE.MeshStandardMaterial({ color: 0x1b2733, roughness: 0.8 }));
 torso.position.set(0, -1.95, 0); torso.scale.set(1.25, 1, 0.8); person.add(torso);
 
+// ---- optional REAL avatar: drop a glTF at teacher/avatar.glb, or pass ?avatar=<url>.
+// On success the built-in head hides and a mouth/jaw morph (if the model has one) is
+// driven by the speaking state. On ANY failure we keep the built-in head — never blank.
+let mouthMorph = null;
+const _avatarUrl = new URLSearchParams(location.search).get('avatar') || 'avatar.glb';
+new GLTFLoader().load(_avatarUrl, (gltf) => {
+  person.visible = false;
+  scene.add(gltf.scene);
+  // Uses the default camera. A specific avatar may want a one-line per-model camera/scale
+  // tweak (humanoids from VRoid/Ready-Player-Me sit ~1.7m tall at the origin) — do that
+  // once the real avatar is in; don't Box3-frame a skinned model on load (bounds aren't ready).
+  gltf.scene.traverse((o) => {
+    if(o.isMesh && o.morphTargetDictionary && !mouthMorph){
+      for(const k of Object.keys(o.morphTargetDictionary)){
+        if(/mouthopen|jaw.?open|viseme.?aa|^aa$/i.test(k)){
+          mouthMorph = { mesh: o, idx: o.morphTargetDictionary[k] }; break;
+        }
+      }
+    }
+  });
+}, undefined, (err) => { console.warn('avatar load failed — using built-in head:', (err && err.message) || err); });
+
 function resize(){
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
@@ -124,6 +150,7 @@ function animate(){
   const target = state.speaking ? (0.35 + Math.abs(Math.sin(t * 16)) * 0.9) : 0.12;
   state.mouth += (target - state.mouth) * Math.min(1, dt * 18);
   mouth.scale.y = state.mouth;
+  if(mouthMorph && mouthMorph.mesh.morphTargetInfluences){ mouthMorph.mesh.morphTargetInfluences[mouthMorph.idx] = Math.min(1, state.mouth); }
   renderer.render(scene, camera);
 }
 // flat-screen now; VR-ready via WebXR. setAnimationLoop drives both (rAF on a monitor,

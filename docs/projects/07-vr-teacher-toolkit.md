@@ -210,8 +210,10 @@ The tools are fine alone; failures live in the gaps between them.
   browser STT + Silero VAD. The teacher talks and listens, still 2D.
 - **Phase 4 — The body, flat screen.** **(DONE 2026-06-15 v0 — `teacher/avatar.html`: a
   procedural Three.js head whose mouth is driven by the speaking state, same brain+voice
-  backend; rendered + screenshot-verified headless. Real VRoid avatar + TalkingHead.js
-  viseme lip-sync drop into this same slot next.)** Three.js scene + VRoid avatar +
+  backend; rendered + screenshot-verified headless. A drop-in glTF loader is now wired
+  (`?avatar=<url>` or `teacher/avatar.glb`) — verified loading an external rigged model,
+  falls back to the built-in head; a VRoid/Ready-Player-Me avatar drops straight in, with
+  per-model camera framing + TalkingHead.js visemes as the next tweak.)** Three.js scene + VRoid avatar +
   TalkingHead.js lip-sync wired to the voice. The avatar teaches on a normal monitor.
   *Structure proven, skin added — no headset yet.*
 - **Phase 5 — VR.** **(CODE-READY 2026-06-15 — WebXR `immersive-vr` + an Enter-VR button
