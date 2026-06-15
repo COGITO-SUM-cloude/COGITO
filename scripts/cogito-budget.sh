@@ -7,7 +7,7 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 LEDGER="$ROOT/skills/cogito-protocol/LESSONS.md"
 MISSION="$ROOT/docs/ACTIVE-MISSION.md"
-THRESHOLD="${COGITO_LOAD_THRESHOLD:-80}"
+THRESHOLD="${COGITO_LOAD_THRESHOLD:-20}"
 PREAMBLE_TOK=260   # the fixed protocol text the two hooks always print (approx)
 
 tok() { local c; c=$(printf '%s' "${1:-}" | wc -m | tr -d ' '); echo $(( c / 4 )); }
@@ -17,8 +17,11 @@ if [ "${n:-0}" -le "$THRESHOLD" ]; then
   ledger_txt="$(grep '^- ' "$LEDGER" 2>/dev/null || true)"
   ledger_mode="FULL — all $n lessons loaded every session (<= $THRESHOLD threshold)"
 else
-  ledger_txt="$(grep '^- ' "$LEDGER" 2>/dev/null | grep -oE '\[#[a-z-]+\]' | sort | uniq -c || true)"
-  ledger_mode="index — $n lessons deferred to on-demand grep (> $THRESHOLD)"
+  crit="$(grep -E '^- .*(\[I:(9|10)\]|#critical)' "$LEDGER" 2>/dev/null || true)"
+  idx="$(grep '^- ' "$LEDGER" 2>/dev/null | grep -oE '\[#[a-z-]+\]' | sort | uniq -c || true)"
+  ledger_txt="$crit"$'\n'"$idx"
+  cn=$(printf '%s' "$crit" | grep -c '^- ' || true)
+  ledger_mode="index — $cn #critical always-load, other $((n-cn)) deferred to grep (> $THRESHOLD)"
 fi
 mission_txt="$(cat "$MISSION" 2>/dev/null || true)"
 recap_txt="$("$ROOT/scripts/cogito-review.sh" due --quiet 2>/dev/null || true)"

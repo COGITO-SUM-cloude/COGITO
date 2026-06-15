@@ -41,12 +41,14 @@ fi
 LEDGER="$DST/LESSONS.md"
 n="$(grep -c '^- ' "$LEDGER" 2>/dev/null || true)"; n="${n:-0}"
 
-# Index-then-load (skill #3): full-load is the safety net while the ledger is small,
-# so behaviour is UNCHANGED below the threshold. Only once the ledger grows past it
-# do we switch to index + just-in-time retrieval (avoid "context rot" from dumping
-# everything). The threshold sits above the consolidation trigger (~60) so a
-# consolidation pass gets the chance to shrink the ledger first.
-THRESHOLD="${COGITO_LOAD_THRESHOLD:-80}"
+# Index-then-load (skill #3): full-load only while the ledger is genuinely small;
+# past the threshold we switch to index + just-in-time retrieval. The default is
+# deliberately LOW (20) because the full ledger rides EVERY turn — ~50 lessons is
+# ~5k tokens/turn, which burns a metered plan's budget fast (measured via
+# scripts/cogito-budget.sh). In index mode the always-load set (#critical / [I:9-10])
+# still prints in full — so the must-know lessons are never deferred — and the rest
+# are one `grep` away. Raise COGITO_LOAD_THRESHOLD to go back to full-load.
+THRESHOLD="${COGITO_LOAD_THRESHOLD:-20}"
 if [ "$n" -le "$THRESHOLD" ]; then
   # --- full-load (unchanged; the safety net) ---
   echo "cogito: brain loaded from $src — $n lessons now in context. Do NOT repeat these:"
