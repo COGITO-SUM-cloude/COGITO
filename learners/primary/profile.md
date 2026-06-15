@@ -40,7 +40,9 @@ separately by `cogito-review.sh` (the log's Leitner boxes); this column tracks *
 | retrieval-practice | (log L1) | — | mastered | 2026-06-13 derived |
 | knowing-vs-doing | (log L3) | — | mastered | 2026-06-14 derived |
 | tired-brain | (log L2) | retrieval-practice | seeded | — |
-| adenosine | docs/learning/lessons/neuroscience/L-adenosine.md | retrieval-practice | next | — |
+| adenosine | docs/learning/lessons/neuroscience/L-adenosine.md | retrieval-practice | learning | 2026-06-15 derived core |
 
-_Next new lesson: **adenosine** (prereq retrieval-practice is mastered). It bridges into
-the seeded "tired brain" idea, so teaching it also sets up the next one._
+_In progress: **adenosine** — core mechanism + the caffeine-crash derived live
+(2026-06-15); the name and "sleep clears it" were supplied, so confirm them at the first
+review before marking mastered. Next bridge: the seeded **tired-brain** lesson (why a
+sludge-filled brain can't learn well)._
