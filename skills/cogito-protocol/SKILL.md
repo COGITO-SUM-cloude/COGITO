@@ -127,6 +127,10 @@ Correcting your own *reasoning* in place tends to degrade it, not improve it (in
 - **Decorrelated review** — for a substantive "done" claim, spawn the fresh-context **cogito-reviewer** subagent (`.claude/agents/`): a separate context with no stake restates the definition-of-done and re-checks it against grounded signals (CoVe-style independent verification). Author and checker sharing one context *is* the bias; a fresh context breaks it (this is design-qa generalized beyond the web).
 - **Principles critique** — checking work against a written rule (this skill, a definition-of-done file) beats a free-form "is this good?".
 
+### 5d. Boundary guards — enforce, don't just remember
+
+A loaded lesson does not fire on its own (knowing ≠ doing). For the few mistakes that recur *despite* being known, bind the rule to its trigger as a **PreToolUse hook** that blocks the command at the boundary: `scripts/cogito-guard.sh` denies self-matching `pkill -f`/`--full` (matches the full command line — killed our own shell twice) and `rm -rf` on a root path, and **fails open** on any error (only a positive match denies, so a buggy guard never bricks a session). Detection is anchored to command position, so a command that merely *mentions* a dangerous string is not blocked. Wired in `.claude/settings.json` and the plugin's `hooks/hooks.json`. This is the mechanical form of implementation-intentions — *when about to run X → it is stopped, before the slip* — and the enforcer that learning-log Lesson 3 calls for. (A blocking *Stop* gate was considered and deliberately deferred: a hook that can prevent finishing is high-risk, and §5b/§5c already enforce verification without that friction.)
+
 ### 6. Closing reflection (brief)
 
 At the end of a substantial task, add two or three sentences:

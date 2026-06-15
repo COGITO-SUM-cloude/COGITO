@@ -37,6 +37,14 @@ value: they decorrelate a check or a search from the main thread.
 definitions — so verify a freshly-written agent on its next session, or proxy it
 through `general-purpose` meanwhile.)
 
+## Hooks (the automatic layer — what *runs*, vs. skills which *inform*)
+Wired in `.claude/settings.json` (and shipped in the plugin's `hooks/hooks.json`):
+
+| Hook | Event | What it does |
+|---|---|---|
+| `cogito-session-start.sh` + `cogito-sync.sh` | SessionStart | load the protocol + the lessons ledger (index-then-load above ~80) + the active mission + the most-overdue learning recap. |
+| `scripts/cogito-guard.sh` | PreToolUse (Bash) | block known-bad commands at the boundary — self-matching `pkill -f`, `rm -rf` on a root path. **Fail-open**: only a positive match denies. |
+
 ## Adding a skill — the creation gate
 A skill is procedural memory **only after it has worked in a real session**
 (Voyager adds a skill only once a critic verifies it; this is §5 "verify outcomes"
