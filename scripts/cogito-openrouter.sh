@@ -1,57 +1,62 @@
 #!/usr/bin/env bash
 # Cogito OpenRouter caller — adds ONE genuinely different (non-Claude) voice to the
-# council, the cheapest cure for "one voice in triplicate" (decorrelated weights,
-# not just a different lens). Uses a FREE model via OpenRouter's free tier ($0).
+# council, the cheapest cure for "one voice in triplicate" (decorrelated weights).
+# Uses FREE models via OpenRouter ($0).
 #
-# SECURITY: the API key is read IN-PROCESS from $OPENROUTER_API_KEY and passed to
-# Python via the environment only — it is NEVER placed in argv and NEVER written to
-# a file (secrets stay off the command line; respects the standing security rules).
-# Set the key as an environment secret in your Claude Code environment settings;
-# do NOT paste it into chat or hard-code it.
+# FALLBACK CHAIN: free tiers rotate out / rate-limit, so a single slug is brittle.
+# It tries models in order and the first that answers wins. The default prefers
+# Hermes (the user's pick), then falls back to other free models.
 #
-# Degrades gracefully: no key / no network -> a one-line notice on stderr and a
-# non-zero exit, so the council simply runs Claude-only. Reads the prompt from
-# stdin; prints the model's answer to stdout.
+# SECURITY: the API key is read IN-PROCESS from $OPENROUTER_API_KEY and crosses into
+# Python via the environment only — NEVER in argv, NEVER written to a file (secrets
+# stay off the command line). Set it as an environment secret; never paste it in chat.
 #
-#   echo "the question" | scripts/cogito-openrouter.sh [model]
-#   default model: deepseek/deepseek-r1:free   (override with $COGITO_OR_MODEL or $1)
+# Degrades gracefully: no key / all models down -> one-line notice on stderr and a
+# non-zero exit, so the council simply runs Claude-only. Prompt on stdin; answer on
+# stdout; which model answered is reported on stderr.
+#
+#   echo "the question" | scripts/cogito-openrouter.sh ["model1,model2,..."]
+#   default chain via $COGITO_OR_MODELS, else: hermes-405b -> llama-3.3-70b -> qwen3-next-80b (all :free)
 set -uo pipefail
 
-MODEL="${1:-${COGITO_OR_MODEL:-deepseek/deepseek-r1:free}}"
+DEFAULT_CHAIN="nousresearch/hermes-3-llama-3.1-405b:free,nvidia/nemotron-3-nano-30b-a3b:free,google/gemma-4-31b-it:free,meta-llama/llama-3.3-70b-instruct:free,qwen/qwen3-next-80b-a3b-instruct:free"
+MODELS="${1:-${COGITO_OR_MODELS:-$DEFAULT_CHAIN}}"
 
 if [ -z "${OPENROUTER_API_KEY:-}" ]; then
   echo "cogito-openrouter: no OPENROUTER_API_KEY set — skipping the non-Claude voice (council runs Claude-only)." >&2
   exit 3
 fi
-
 prompt="$(cat)"
 if [ -z "$prompt" ]; then
   echo "cogito-openrouter: empty prompt on stdin." >&2
   exit 2
 fi
 
-# key + prompt cross into Python via the environment (not argv, not a file)
-OPENROUTER_API_KEY="$OPENROUTER_API_KEY" COGITO_MODEL="$MODEL" COGITO_PROMPT="$prompt" python3 - <<'PY'
+OPENROUTER_API_KEY="$OPENROUTER_API_KEY" COGITO_MODELS="$MODELS" COGITO_PROMPT="$prompt" python3 - <<'PY'
 import os, sys, json, urllib.request, urllib.error
 key = os.environ["OPENROUTER_API_KEY"]
-model = os.environ["COGITO_MODEL"]
+models = [m.strip() for m in os.environ["COGITO_MODELS"].split(",") if m.strip()]
 prompt = os.environ["COGITO_PROMPT"]
-body = json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode()
-req = urllib.request.Request(
-    "https://openrouter.ai/api/v1/chat/completions",
-    data=body,
-    headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
-    method="POST",
-)
-try:
-    with urllib.request.urlopen(req, timeout=60) as r:
-        data = json.load(r)
-    print(data["choices"][0]["message"]["content"])
-except urllib.error.HTTPError as e:
-    detail = e.read()[:300].decode("utf-8", "replace")
-    sys.stderr.write("cogito-openrouter: HTTP %s — %s\n" % (e.code, detail))
-    sys.exit(4)
-except Exception as e:
-    sys.stderr.write("cogito-openrouter: request failed — %s\n" % e)
-    sys.exit(5)
+last = "no models tried"
+for model in models:
+    body = json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode()
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=body,
+        headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+        method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=90) as r:
+            data = json.load(r)
+        msg = data["choices"][0]["message"]["content"]
+        sys.stderr.write("cogito-openrouter: answered by %s\n" % model)
+        print(msg)
+        sys.exit(0)
+    except urllib.error.HTTPError as e:
+        last = "HTTP %s on %s — %s" % (e.code, model, e.read()[:160].decode("utf-8", "replace"))
+    except Exception as e:
+        last = "%s on %s" % (e, model)
+    sys.stderr.write("cogito-openrouter: %s; trying next...\n" % last)
+sys.stderr.write("cogito-openrouter: all models failed (last: %s). Council stays Claude-only.\n" % last)
+sys.exit(4)
 PY
