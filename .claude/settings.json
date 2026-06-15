@@ -25,6 +25,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/scripts/cogito-converge.sh",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }
