@@ -6,6 +6,32 @@ Paste this into a Claude Code session pointed at the **paint** repo
 
 ---
 
+## START HERE — do these in order (the money path)
+Why this order: the site exists to win paint customers — the owner earns **10% of each
+job it brings in**, and on a near-zero budget that commission is the real income. So fix
+what loses customers, then go get customers. **Verify every step from a logged-out phone**,
+never the owner's own Vercel login.
+
+0. **Can a stranger even load it?** Open the live URL in incognito / logged-out. If it
+   shows Vercel "Authentication Required", Deployment Protection is ON — turn it OFF
+   (Vercel → project → Settings → Deployment Protection). Until a stranger can load the
+   site, nothing else matters.
+1. **Fix the broken photos** (Priority 1 below — the diagnosis + fix are already done;
+   just apply it and confirm the optimized `/_next/image?...` URL returns **200** from a
+   logged-out context). Broken pictures on a painter's site kill trust instantly.
+2. **Scrub the owner's name off the public site.** A GitHub link in the footer / a
+   "view repo" button exposes the owner's username (it reads like a real name). Remove or
+   relabel those public links, and scrub the owner's handle / real name from the README,
+   page metadata, and anything a visitor or search engine can see. (The business
+   phone/email shown on the site are intentionally public — leave those.)
+3. **Get it found — the actual money-mover.** A perfect site nobody sees earns $0. Set up
+   a free **Google Business Profile** for J.L. Painting SC (Columbia, SC), and make sure
+   the site has clear, indexable **service pages** (interior / exterior / cabinets — each
+   with the service area and a "get a quote" call to action). This is what brings the
+   customers the 10% rides on, and is likely the real bottleneck — not the site's looks.
+
+Everything below is the deeper build context + the exact photo-fix diagnosis.
+
 ## Mission
 Continue improving **J.L. Painting SC** — a real, already-live painting-business site
 for Columbia, SC. This is iterative improvement of a deployed product, **not** a fresh
