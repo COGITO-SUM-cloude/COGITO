@@ -89,6 +89,16 @@ At checkpoint, the lessons section ships inside the state file the user keeps. W
 
 **Lesson format + scale (2026-06-15).** Tag each lesson and score its importance: `[#tag][#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE` (importance 1 = minor, 10 = severe/safety; tags like `#git #deploy #eyes #verify #memory #web #process`). Tags are the **embedding-free retrieval index** — grep the relevant tag for just-in-time depth rather than relying only on the full print. When the ledger passes ~60 lessons (or after a severe one), run a **consolidation pass** — skill `cogito-consolidate`, helper `scripts/cogito-consolidate.sh`: `report` to cluster by tag, then merge/supersede redundant lessons into fewer higher-tier rules that cite the raw lines they replace, **move** the raw ones (verbatim) to `LESSONS-ARCHIVE.md` (never delete — git keeps history), and run `cogito-consolidate.sh verify` to prove nothing was lost before committing. The most recent ~5 lessons are on **probation** (not merged until they prove recurring); `#critical` / importance ≥ 9 lessons always load. Beyond merging, **decay** retires staleness (same skill, helper `scripts/cogito-decay.sh`): archive a lesson only when it is explicitly low-importance (`[I:≤3]`) AND cold (>~90 days) AND off-probation — never `#critical` / `[I:≥9]` / unscored. Optional recency stamps `[d:YYYY-MM-DD]` (learned) / `[seen:YYYY-MM-DD]` (last applied; `cogito-decay.sh touch` writes it) feed the cold-test, else recency falls back to the line's git-blame date. (Rationale + sources: docs/projects/06-cogito-upgrade-roadmap.md.)
 
+### 4c. Memory taxonomy + library hygiene (CoALA)
+
+Cogito's memory maps onto the CoALA types, each with one durable home (full map: `skills/INDEX.md`):
+- **Episodic** (what happened) → checkpoints `docs/checkpoints/` + learning log `docs/learning/log.md`.
+- **Semantic** (earned rules) → the lessons ledger `LESSONS.md` (+ `LESSONS-ARCHIVE.md`).
+- **Procedural** (how to act) → skills in `skills/`, catalogued in `skills/INDEX.md` (description-keyed, loaded just-in-time).
+- **Working** (this turn) → the context window + the state file `docs/ACTIVE-MISSION.md`.
+
+**Skill-creation gate.** A skill is procedural memory only after it has WORKED in a real session (Voyager's verified-skill rule = §5 "verify outcomes" applied to the library). Before committing a new skill, run `scripts/cogito-skill-check.sh <name>` (frontmatter + index checks) and be able to name the real task it ran on and the observed outcome that proved it; then add it to `skills/INDEX.md`. A skill added on spec is a hypothesis — keep it on a branch until a session proves it.
+
 ### 5. Solve vs. ask (honest capability boundary)
 
 If a strategy is fully executable with available tools, execute it — decisively, with stated confidence ("~90% confident because...", not "maybe I could..."). If any part requires the user, format it explicitly:
