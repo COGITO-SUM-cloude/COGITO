@@ -1,0 +1,72 @@
+---
+name: cogito-consolidate
+description: Consolidation pass for the Cogito lessons ledger — cluster the ledger by tag, merge or supersede redundant/duplicate lessons into fewer higher-tier rules, and MOVE the raw lines into LESSONS-ARCHIVE.md with provenance (never delete). Use when the active ledger (skills/cogito-protocol/LESSONS.md) passes ~60 lessons, after a severe (I:9-10 / #critical) lesson lands, or when the user says "/consolidate", "consolidate the lessons", "compress/tidy the ledger". The companion to cogito-protocol §4b. Conservative by design — when in doubt, do not merge.
+---
+
+# Cogito — Consolidation Pass (`/consolidate`)
+
+The lessons ledger loads in full at every session start (the SessionStart hook
+greps `^- ` from `LESSONS.md`). That is cheap while the list is short and a
+liability once it is long — "context rot" sets in and the signal dilutes. A
+consolidation pass keeps the always-loaded set small **without losing detail**:
+it compiles clusters of related raw lessons into a few higher-tier rules and
+parks the raw lines in an archive the loader does not read.
+
+This is mem0's ADD / UPDATE / MERGE / NOOP and Soar's chunking applied to a
+plain-text causal ledger, with the survey's safety rule on top: **archive, don't
+delete; keep a probation buffer; the git diff is the validation layer.**
+(Rationale + sources: `docs/projects/06-cogito-upgrade-roadmap.md`, item #4/#5.)
+
+## When it runs (trigger)
+- The active ledger passes ~60 `- ` lessons (the helper prints the count), **or**
+- a severe lesson lands (importance `[I:9]`/`[I:10]` or `#critical`), **or**
+- the user asks for it.
+
+Below the trigger, do **not** force a pass — merging a small ledger destroys
+specificity for no benefit. Exercising it as a dry run is fine; a real merge is
+not.
+
+## The procedure
+
+1. **Pre-flight — see the shape.** Run `scripts/cogito-consolidate.sh report`.
+   It prints the active count vs. the trigger, the tag clusters (a cluster of 3+
+   is a merge candidate), how many lessons are untagged (tag those first — tags
+   are the retrieval index), and the severe lessons that must never be merged
+   away.
+
+2. **Respect probation.** The most recent ~5 lessons are exempt. A fresh lesson
+   has not yet proven it recurs; compressing it into a rule too early bakes in
+   noise. Merge only mature, repeated lessons.
+
+3. **Decide per cluster (mem0 taxonomy).**
+   - **NOOP** — distinct, still load-worthy, or on probation → leave it. This is
+     the default. When two lessons look similar but encode *different* causes,
+     keep both.
+   - **MERGE / chunk** — 3+ lessons that are the same recurring fix → write ONE
+     higher-tier rule that names the pattern and cites how many raw lines it
+     compiles (provenance).
+   - **SUPERSEDE** — a newer/sharper lesson strictly contains an older one → keep
+     the sharper rule, archive the old.
+   Keep every rule in the `SYMPTOM -> ROOT CAUSE -> RULE` shape and tag it. Never
+   merge away a `#critical` / `[I:9-10]` lesson.
+
+4. **Move, never delete.** For every raw line a merge removes from `LESSONS.md`,
+   cut it **verbatim** into `LESSONS-ARCHIVE.md` under a dated block headed by the
+   active rule that now supersedes it. (Verbatim matters: the gate in step 5
+   matches the moved line against the removed line exactly.)
+
+5. **Prove nothing was lost (the gate).** Run
+   `scripts/cogito-consolidate.sh verify`. It checks that every `- ` line removed
+   from the active ledger reappears verbatim in the archive, and exits non-zero
+   if any line is unaccounted for. Do not commit until it passes. (This is the
+   §5b runnable verification gate applied to memory surgery.)
+
+6. **Review the diff, then commit.** `git diff` is the real validation layer for
+   over-merge: read it as a stranger would and confirm no causal detail was
+   flattened. Commit faceless (`Cogito <cogito@users.noreply.github.com>`) with a
+   message naming what merged into what and the before/after count.
+
+## The one bias to remember
+Over-merge is the failure mode, not under-merge. A ledger that is slightly too
+long costs a little context; a rule that silently swallowed a distinct cause
+costs a repeated scar. **When in doubt, NOOP.**
