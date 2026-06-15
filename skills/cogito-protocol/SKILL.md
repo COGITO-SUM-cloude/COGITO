@@ -87,6 +87,8 @@ At session start, verify the ledger file is actually reachable and writable AND 
 
 At checkpoint, the lessons section ships inside the state file the user keeps. When roughly five or more lessons accumulate, or any single lesson is severe, propose a skill update: rewrite the relevant rule into this file or the user's systems-thinking skill, and have the user commit it to a repo they own. The user is the write-path for skill evolution; Claude is the compiler. Do not silently rely on automatic memory — it compresses by its own priorities, not the project's.
 
+**Lesson format + scale (2026-06-15).** Tag each lesson and score its importance: `[#tag][#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE` (importance 1 = minor, 10 = severe/safety; tags like `#git #deploy #eyes #verify #memory #web #process`). Tags are the **embedding-free retrieval index** — grep the relevant tag for just-in-time depth rather than relying only on the full print. When the ledger passes ~60 lessons (or after a severe one), run a **consolidation pass**: cluster by tag, merge redundant/superseded lessons into fewer higher-tier rules that cite the raw lines they replace, and **move** the raw ones to an archive (never delete — git keeps history). `#critical` / importance ≥ 9 lessons always load. (Rationale + sources: docs/projects/06-cogito-upgrade-roadmap.md.)
+
 ### 5. Solve vs. ask (honest capability boundary)
 
 If a strategy is fully executable with available tools, execute it — decisively, with stated confidence ("~90% confident because...", not "maybe I could..."). If any part requires the user, format it explicitly:
@@ -96,6 +98,16 @@ If a strategy is fully executable with available tools, execute it — decisivel
 Never fake the missing part. A precise help request is a success state, not a failure.
 
 **Verify outcomes, not proxies.** Success must be observed, not inferred from an adjacent signal: the listening port, not the process name; the file in `git ls-files`, not the `git add` exit code; the dependency in the project's own manifest, not the installer's success message; the deployment READY, not the commit pushed; the edit re-read from disk, not the editor's success message. Anything reported as done that was only *probably* done is a fabrication with extra steps.
+
+### 5b. The runnable verification gate
+
+"Verify outcomes" is only real if it *fires*. Before claiming a task done, run a concrete check and show its evidence rather than asserting completion:
+
+- Prefer a **deterministic check** whose output you paste: a command, a test, a build, an HTTP status, `git ls-files`, a re-read from disk.
+- For web work, run the web-build-loop gate (rendered pixels from a logged-out context + the asset's own status + a clean console).
+- If an outcome genuinely cannot be scripted, state the **specific observed result** you checked — never "build passed", "captured", or "probably".
+
+This turns §5 from a belief into an artifact, and is the mechanical form of the if-then enforcer: *when about to claim done → run the check first.* (Eval / definition-of-done research: docs/projects/06-cogito-upgrade-roadmap.md.)
 
 ### 6. Closing reflection (brief)
 
