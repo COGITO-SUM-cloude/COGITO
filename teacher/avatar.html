@@ -108,14 +108,20 @@ torso.position.set(0, -1.95, 0); torso.scale.set(1.25, 1, 0.8); person.add(torso
 // ---- optional REAL avatar: drop a glTF at teacher/avatar.glb, or pass ?avatar=<url>.
 // On success the built-in head hides and a mouth/jaw morph (if the model has one) is
 // driven by the speaking state. On ANY failure we keep the built-in head — never blank.
-let mouthMorph = null;
+let mouthMorph = null, mixer = null;
 const _avatarUrl = new URLSearchParams(location.search).get('avatar') || 'avatar.glb';
 new GLTFLoader().load(_avatarUrl, (gltf) => {
   person.visible = false;
   scene.add(gltf.scene);
-  // Uses the default camera. A specific avatar may want a one-line per-model camera/scale
-  // tweak (humanoids from VRoid/Ready-Player-Me sit ~1.7m tall at the origin) — do that
-  // once the real avatar is in; don't Box3-frame a skinned model on load (bounds aren't ready).
+  // Fixed humanoid framing (no Box3 on a skinned model — bounds aren't valid on load).
+  // Tuned for a ~1.8m character standing at the origin (RobotExpressive / RPM / VRoid).
+  camera.position.set(0, 1.8, 9.5); camera.lookAt(0, 1.8, 0);
+  // play the model's idle (or first) animation clip for liveliness, if it has one.
+  if(gltf.animations && gltf.animations.length){
+    mixer = new THREE.AnimationMixer(gltf.scene);
+    const clip = gltf.animations.find(a => /idle/i.test(a.name)) || gltf.animations[0];
+    mixer.clipAction(clip).play();
+  }
   gltf.scene.traverse((o) => {
     if(o.isMesh && o.morphTargetDictionary && !mouthMorph){
       for(const k of Object.keys(o.morphTargetDictionary)){
@@ -137,6 +143,7 @@ let blink = 0, nextBlink = 1.5, t = 0;
 const clock = new THREE.Clock();
 function animate(){
   const dt = clock.getDelta(); t += dt;
+  if(mixer) mixer.update(dt);
   // idle: gentle bob + sway
   person.position.y = Math.sin(t * 0.9) * 0.03;
   person.rotation.y = Math.sin(t * 0.4) * 0.08;
