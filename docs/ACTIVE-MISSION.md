@@ -3,33 +3,24 @@ _Short on purpose: read into every session, costs tokens each turn. Talk adult-t
 
 When the user says "Cogito": greet in one line, confirm, continue. Don't re-interview.
 
-## Mission — make the brain as POWERFUL as possible, then the VR teacher is easy
-Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so a future VR/3D AI teacher is easy to build. Execute the council's ROI-ranked list, best payoff first. Every pick is $0 + file-native.
+## Mission — the AI teacher is BUILT + DEPLOYED; now make it good + give the brain to every project
+The personalised AI teacher exists and is live (private). Two active threads:
+1. **Polish the teacher** (warmth: voice + model).
+2. **Share the brain across all repos** (the "Cogito everywhere" hub-and-spoke) + build the **dashboard** (the control room over all projects).
+Everything stays $0 + file-native where possible; a small paid model is the one open cost question.
 
-## Foundation already in place (2026-06-15)
-- ONE canonical brain on `main`; the SessionStart hooks load from `origin/main`, not the session branch (cross-session consistency — fixed + verified).
-- Brain AUTO-SAVES at turn end (Stop hook `scripts/cogito-converge.sh`): brain files only, commits + pushes to the branch, AND fast-forwards `main` — the user turned auto-push ON (2026-06-15); FF-only, never clobber. Branch-only: `COGITO_CONVERGE_TO_MAIN=0`; fully off: `COGITO_AUTO_CONVERGE=0`.
+## Where things stand (2026-06-15 eve) — full detail: `docs/checkpoints/2026-06-15-teacher-deployed-brain-shared.md`
+- **Teacher: built, deployed, PRIVATE, works.** Engine = `skills/cogito-teacher` + `learners/primary/profile.md` + `scripts/cogito-teach.sh`; app = `scripts/cogito-serve.sh` + `teacher/` (2D `index.html`, 3D `avatar.html` + CC0 robot). Review + mastery write-back. Live on Vercel project **cogito** (private behind Vercel auth) — `cogito-jfl-lol-projects.vercel.app` (`/`, `/avatar.html`); brain = `api/chat.py` serverless fn (free OpenRouter models, `OPENROUTER_API_KEY` env). User confirmed it speaks + mic works.
+- **Voice:** still robotic. Warmer persona = deployed. **Neural voice (Kokoro) = committed on branch, NOT deployed** (paused). Next: deploy it → user tests → if still flat, a small **paid** model/voice is the real lever.
+- **Shared brain: ON.** `COGITO_TOKEN` (fine-grained, contents:rw, cogito-only) set + **verified live** (write-back works). READ half = `scripts/cogito-sync.sh` + SessionStart hook. **To wire another repo (paint, dashboard): do it FROM that repo's own session** — cogito sessions are walled to cogito.
 
-## Council-ranked roadmap — go down the list
-1. DONE — supersession: a corrected lesson consolidates/archives the old one so only the current rule loads (fixed a verified contradiction; conservation gate passed).
-2. DONE — Stop-hook auto-save (above).
-3. DONE — `UserPromptSubmit` hook (`scripts/cogito-recall.sh`): auto-pulls the 1-3 lessons matching the prompt's keywords; verified live. Kill switch: `COGITO_RECALL=0`.
-4. DONE — Verify-before-store gate: the skill-check gate (`cogito-skill-check.sh`) + the documented rule + the lesson-probation buffer already existed (prior merge); ran the gate, all 5 skills pass. Confirmed working, not rebuilt.
-5. DONE — Sharpened the JUDGE: explicit same-base-model decorrelation check ("one voice in triplicate") + judge-model-rotation guidance in cogito-council. Rotating onto a non-Claude judge waits on a key (#7).
-6. DONE (substrate) — Wikilink graph: `scripts/cogito-links.sh` (backlinks/out/all) + first prerequisite edges wired in the teacher's adenosine lesson. Bulk-link the brain WHEN we build the teacher (per the judge — premature before then).
-7. DONE — `scripts/cogito-openrouter.sh`: a real non-Claude council voice via `$OPENROUTER_API_KEY` (env secret, read in-process only). Verified LIVE end-to-end (a free model answered correctly). Fallback chain (Hermes preferred -> nemotron/gemma/llama/qwen) survives free-tier rate-limits; degrades to Claude-only with no key.
-8. DONE — `scripts/cogito-query.sh`: structured saved queries over the ledger (tag / imp / critical / untagged / saved `<name>.q`) — the Bases pattern, data stays in LESSONS.md. Surfaced a maintenance finding: 36/58 lessons are untagged (older ones; reachable by keyword via #3, not by tag).
-DEFER (panel agreed): paid Fusion, local Hermes (big GPU), MCP "expose the brain" server (for the VR client later), local embedding index, the Obsidian app.
-
-## For later (the real long-pole)
-The VR teacher's hard part is the STUDENT MODEL — tracking what a learner knows over time (same temporal-validity idea as #1, but for the learner). Convene a dedicated council on it when we shift from "harden the brain" to "build the teacher".
+## Resume here (next)
+- When in **another repo's session**: "wire this to the brain" → drop in `cogito-sync.sh` + hook + capture, then watch a real lesson land in the brain.
+- **Teacher polish**: deploy the neural voice; decide the paid-model question; grow neuroscience lessons (content = the real "training").
+- **Build the dashboard** (its own repo, wired to the brain).
 
 ## Guardrails (always on)
-- One brain = `main`. Sync only `main` + the active branch. NEVER push to old session branches.
-- `main` updates: the auto-save hook now FF-pushes to `main` (user opted in 2026-06-15; FF-only, never clobber). A human-initiated force/non-FF update to `main` still needs an explicit yes.
-- Faceless: commit as `Cogito <cogito@users.noreply.github.com>`; nothing personal in artifacts.
-- Verify by running/re-reading — never "probably / passed / captured."
-- Talk adult-to-adult: plain, short, no jargon, no "baby steps" framing (the #critical comms lesson).
-
-## Full context
-This session's council + judge produced the roadmap above. Teacher: `docs/checkpoints/2026-06-15-ai-teacher-pivot.md`. Fixes: `docs/checkpoints/2026-06-15-consistency-fix.md`.
+- One brain = `main`. The converge Stop hook FF-pushes brain files to `main` (user opted in). **A direct/manual `main` push needs an EXPLICIT per-time yes** (classifier enforces this; one "deploy it" is not standing permission).
+- Faceless: now set as LOCAL git config (`Cogito <cogito@users.noreply.github.com>`) so merges don't slip to "Claude". Nothing personal in artifacts.
+- The Vercel deploy stays **private** until the user says publish. Keys = least privilege, read in-process never argv.
+- Verify by running/re-reading — never "probably / passed". Talk plain + short (the #critical comms lesson).

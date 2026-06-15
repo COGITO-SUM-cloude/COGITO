@@ -20,6 +20,10 @@ syncs with.** That place is this repo (it's public, so reading it needs no login
   - From **any other repo** (e.g. paint): the session can't push here without credentials,
     so it needs a stored key (below). Until that's set up, lessons learned elsewhere don't
     reach the brain automatically — the gap we're closing.
+  - **STATUS — write-back is ON (verified 2026-06-15):** `COGITO_TOKEN` (fine-grained,
+    Contents: Read+write, scoped to `COGITO-SUM-cloude/COGITO` only) is set and **proven
+    live** — a commit to a throwaway branch succeeded and was deleted; main untouched. Any
+    repo whose session carries this key can now push lessons home.
 
 ## Wire any repo to READ the brain (do once per repo)
 1. Copy `scripts/cogito-sync.sh` into that repo (e.g. `scripts/cogito-sync.sh`).

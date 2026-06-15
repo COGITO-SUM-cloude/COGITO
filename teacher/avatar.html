@@ -188,6 +188,7 @@ let voiceOn = canSpeak; const spk = document.getElementById('spk');
 if(!canSpeak) spk.style.display = 'none';
 spk.addEventListener('click', () => { voiceOn = !voiceOn; spk.classList.toggle('on', voiceOn);
   spk.textContent = voiceOn ? '🔊 Voice on' : '🔇 Voice off'; if(!voiceOn){ speechSynthesis.cancel(); state.speaking = false; } });
+// ---- Voice: neural (Kokoro, in-browser, free) with graceful fallback to browser TTS ----
 let chosenVoice = null;
 function pickVoice(){
   const vs = speechSynthesis.getVoices(); if(!vs.length) return null;
@@ -196,8 +197,22 @@ function pickVoice(){
   return vs.find(x => /en-US/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang)) || null;
 }
 if(canSpeak){ chosenVoice = pickVoice(); speechSynthesis.onvoiceschanged = () => { chosenVoice = pickVoice(); }; }
-function speak(text){
-  if(!voiceOn || !canSpeak) return;
+
+let kokoro = null, kokoroTried = false, curAudio = null;
+async function loadKokoro(){
+  if(kokoro || kokoroTried) return; kokoroTried = true;
+  try{
+    const mod = await import('https://esm.sh/kokoro-js');
+    let device = 'wasm';
+    try{ if(navigator.gpu && (await navigator.gpu.requestAdapter())) device = 'webgpu'; }catch(_){}
+    kokoro = await mod.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'q8', device });
+    console.log('neural voice ready (' + device + ')');
+  }catch(e){ console.warn('neural voice unavailable, using browser voice:', (e && e.message) || e); kokoro = null; }
+}
+loadKokoro();  // start downloading the neural voice in the background
+
+function speakBrowser(text){
+  if(!canSpeak) return;
   try{ speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     if(chosenVoice) u.voice = chosenVoice;
@@ -206,6 +221,22 @@ function speak(text){
     u.onend = () => state.speaking = false;
     speechSynthesis.speak(u);
   }catch(_){}
+}
+async function speak(text){
+  if(!voiceOn) return;
+  if(kokoro){
+    try{
+      if(curAudio){ try{ curAudio.pause(); }catch(_){} }
+      state.speaking = true;
+      const out = await kokoro.generate(text, { voice: 'af_heart' });
+      const url = URL.createObjectURL(out.toBlob());
+      curAudio = new Audio(url);
+      curAudio.onended = () => { state.speaking = false; URL.revokeObjectURL(url); };
+      await curAudio.play();
+      return;
+    }catch(e){ state.speaking = false; console.warn('neural speak failed, browser voice:', (e && e.message) || e); }
+  }
+  speakBrowser(text);
 }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const mic = document.getElementById('mic'), input = document.getElementById('in');
