@@ -6,24 +6,53 @@
 # session's context, so the session literally starts with the lessons in mind and
 # can't repeat a past mistake — syncing to disk alone is not enough.
 #
-#   - Inside the central Cogito repo: uses the local, authoritative ledger
-#     (which may hold lessons not yet pushed).
+#   - Inside the central Cogito repo: loads from the CANONICAL ref (origin/main),
+#     never the checked-out session branch — so every session reads the SAME brain
+#     and they cannot silently diverge. Falls back to the working tree if offline.
 #   - In any other repo: clones the PUBLIC Cogito repo (anonymous, no token).
 set -euo pipefail
 
 DST="$HOME/.claude/skills/cogito-protocol"
 REPO_URL="https://github.com/COGITO-SUM-cloude/COGITO.git"
 SUB="skills/cogito-protocol"
+BRAIN_REF="${COGITO_BRAIN_REF:-origin/main}"   # the ONE canonical brain — NOT the checked-out branch
 mkdir -p "$DST"
+
+# Load the brain (LESSONS + SKILL) from the canonical ref into $DST. Writes via
+# temp files and refuses to install an EMPTY ledger, so a partial/failed read can
+# never blank the brain. Returns non-zero (-> caller falls back) on any problem.
+load_canonical() {
+  local root="$1" t_les t_skill
+  git -C "$root" cat-file -e "$BRAIN_REF:$SUB/LESSONS.md" 2>/dev/null || return 1
+  t_les="$(mktemp)"; t_skill="$(mktemp)"
+  if git -C "$root" show "$BRAIN_REF:$SUB/LESSONS.md" > "$t_les" 2>/dev/null && [ -s "$t_les" ]; then
+    mv "$t_les" "$DST/LESSONS.md"
+  else
+    rm -f "$t_les" "$t_skill"; return 1
+  fi
+  if git -C "$root" show "$BRAIN_REF:$SUB/SKILL.md" > "$t_skill" 2>/dev/null && [ -s "$t_skill" ]; then
+    mv "$t_skill" "$DST/SKILL.md"
+  else
+    rm -f "$t_skill"
+  fi
+  return 0
+}
 
 src=""
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 root="$(git -C "$proj" rev-parse --show-toplevel 2>/dev/null || true)"
 if [ -n "$root" ] && [ -f "$root/$SUB/LESSONS.md" ] \
    && git -C "$root" remote -v 2>/dev/null | grep -qiE 'COGITO-SUM-cloude/COGITO(\.git)?'; then
-  cp -f "$root/$SUB/SKILL.md"   "$DST/SKILL.md"   2>/dev/null || true
-  cp -f "$root/$SUB/LESSONS.md" "$DST/LESSONS.md"
-  src="local central repo"
+  # best-effort: refresh the canonical ref so we read the latest shared brain
+  git -C "$root" fetch --quiet origin main 2>/dev/null || true
+  if load_canonical "$root"; then
+    src="canonical $BRAIN_REF"
+  else
+    # offline / fresh clone / ref missing -> working-tree fallback (the safety net)
+    cp -f "$root/$SUB/SKILL.md"   "$DST/SKILL.md"   2>/dev/null || true
+    cp -f "$root/$SUB/LESSONS.md" "$DST/LESSONS.md"
+    src="local working tree (fallback; $BRAIN_REF unreachable)"
+  fi
 else
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
   if git clone --depth 1 --quiet "$REPO_URL" "$tmp" 2>/dev/null && [ -f "$tmp/$SUB/LESSONS.md" ]; then

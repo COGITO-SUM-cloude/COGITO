@@ -1,28 +1,35 @@
 #!/usr/bin/env bash
 # Cogito SessionStart hook.
-# Bootstraps the protocol skill from the repo (the durable source of truth),
-# guarantees the lessons ledger exists and is writable, then injects the
-# operating context into the session. Idempotent, non-interactive, fast.
+# Bootstraps the protocol skill from the CANONICAL ref (origin/main — the durable
+# source of truth, NOT the checked-out session branch), guarantees the lessons
+# ledger exists, then injects the operating context. Idempotent, fast, non-interactive.
 # Runs in every session (remote or local) so Cogito is always live.
 set -euo pipefail
 
 REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-SKILL_SRC="$REPO/skills/cogito-protocol"
 SKILL_DST="$CLAUDE_HOME/skills/cogito-protocol"
 LEDGER="$SKILL_DST/LESSONS.md"
+BRAIN_REF="${COGITO_BRAIN_REF:-origin/main}"   # the ONE canonical brain — NEVER the checked-out branch
 
 mkdir -p "$SKILL_DST"
 
-# Re-install the protocol from the repo every session: the container may revert
-# skill edits, but the repo is durable, so this keeps the live skill in sync
-# with the committed source of truth. The ledger is never clobbered.
-if [ -f "$SKILL_SRC/SKILL.md" ] && [ "$SKILL_SRC" != "$SKILL_DST" ]; then
-  cp -f "$SKILL_SRC/SKILL.md" "$SKILL_DST/SKILL.md"
-fi
+# Load the brain from a single fixed point (origin/main), not the branch this
+# container happened to check out — otherwise each session reads a different
+# branch's memory and they silently diverge (the cross-session consistency bug).
+# Fetch is best-effort; canon_read falls back to the working tree offline so a
+# fetch failure never blanks the brain (the safety net). Always returns 0.
+git -C "$REPO" fetch --quiet origin main 2>/dev/null || true
+canon_read() { git -C "$REPO" show "$BRAIN_REF:$1" 2>/dev/null || cat "$REPO/$1" 2>/dev/null || true; }
+
+# Re-install the protocol every session from the canonical ref (the container may
+# revert skill edits, but origin/main is durable). The ledger is never clobbered.
+skill_md="$(canon_read skills/cogito-protocol/SKILL.md)"
+if [ -n "$skill_md" ]; then printf '%s\n' "$skill_md" > "$SKILL_DST/SKILL.md"; fi
 if [ ! -f "$LEDGER" ]; then
-  if [ -f "$SKILL_SRC/LESSONS.md" ]; then
-    cp "$SKILL_SRC/LESSONS.md" "$LEDGER"
+  lessons_md="$(canon_read skills/cogito-protocol/LESSONS.md)"
+  if [ -n "$lessons_md" ]; then
+    printf '%s\n' "$lessons_md" > "$LEDGER"
   else
     printf '# Cogito — Lessons Ledger\n\nSYMPTOM -> ROOT CAUSE -> RULE\n\n## Lessons\n' > "$LEDGER"
   fi
@@ -40,11 +47,12 @@ moment they happen (SYMPTOM -> ROOT CAUSE -> RULE), and close with a checkpoint
 Durable lessons ledger: ~/.claude/skills/cogito-protocol/LESSONS.md
 CTX
 
-# Surface the active mission, if one is set, for instant cross-session resume.
-MISSION="$REPO/docs/ACTIVE-MISSION.md"
-if [ -f "$MISSION" ]; then
+# Surface the active mission from the canonical ref for instant cross-session
+# resume — the SAME mission for every session, not whatever this branch holds.
+mission="$(canon_read docs/ACTIVE-MISSION.md)"
+if [ -n "$mission" ]; then
   printf '\n----- ACTIVE MISSION (resume this) -----\n'
-  cat "$MISSION"
+  printf '%s\n' "$mission"
   printf '\n----- end ACTIVE MISSION -----\n'
 fi
 
