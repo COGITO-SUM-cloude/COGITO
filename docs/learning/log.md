@@ -5,6 +5,13 @@ forgotten session. Each entry: the idea in plain words, its real name, one way t
 use it, and a recap cue for next time. We revisit these on purpose — that is how
 we beat forgetting.
 
+We also **schedule** the reviews (spaced repetition, Leitner ladder): each lesson
+carries `box:N due:YYYY-MM-DD`. A correct recall promotes it to a longer interval
+(boxes 1→2→3→4→5→6 = 1, 3, 7, 16, 35, 90 days); a miss resets it to box 1. At
+session start the most-overdue lesson's recap cue is surfaced automatically.
+`scripts/cogito-review.sh due` lists what's due; `… grade N pass|fail` records a
+review. (`box:0` = seeded, not yet in rotation.)
+
 **Field in focus:** Neuroscience (started 2026-06-13)
 
 ---
@@ -24,6 +31,7 @@ we beat forgetting.
   looking at it or walking it?"
 - **Status:** ✓ Derived by the user (2026-06-13) — chose "B, the struggle one" and
   reasoned it out. Earned, not just told.
+- **Review:** box:1 due:2026-06-14
 
 ---
 
@@ -35,6 +43,7 @@ we beat forgetting.
 - **Where we're headed (don't reveal — let them derive):** a tired brain encodes
   weakly, and sleep is when the day's faint trails get reinforced. So rest isn't
   lazy — it's literally part of learning.
+- **Review:** box:0 (seeded — enters rotation once taught/derived)
 
 ---
 
@@ -59,3 +68,4 @@ we beat forgetting.
   the true decision is in its output," with "no actual enforcer"; the second time worked
   because the failure made it "review its knowledge and [find] there was a rule for it."
   Reached the availability/accessibility idea on their own.
+- **Review:** box:1 due:2026-06-15
