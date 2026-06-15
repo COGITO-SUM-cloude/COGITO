@@ -62,7 +62,15 @@ catch the "one voice in triplicate" the panel cannot see in itself.
 ## Upgrade path (→ real OpenRouter Fusion, later)
 When a paid OpenRouter key — or a strong free non-Claude model — is available,
 replace one or more panelists with a call to `openrouter/fusion` (or a specific
-GPT/Gemini model); the judge and synthesis steps are unchanged. Phase 3 (run a
+GPT/Gemini model); the judge and synthesis steps are unchanged.
+
+**Now wired (free tier):** `scripts/cogito-openrouter.sh` calls a free non-Claude
+model (default `deepseek/deepseek-r1:free`), reading the key from the
+`$OPENROUTER_API_KEY` environment secret — never argv, never a file. Use it as ONE
+panelist: pipe the sharpened question into it and hand its answer to `cogito-judge`
+alongside the Claude panelists (this is the decorrelated voice that cures "one
+voice in triplicate"). With no key set it exits cleanly and the council stays
+Claude-only — so it is always safe to call. Phase 3 (run a
 panel of local models on your own machine) needs stronger hardware but the
 procedure is identical. The council is built so *how you use it* never changes as
 the panel behind it gets stronger.
