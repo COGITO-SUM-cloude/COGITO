@@ -119,6 +119,14 @@ Never fake the missing part. A precise help request is a success state, not a fa
 
 This turns §5 from a belief into an artifact, and is the mechanical form of the if-then enforcer: *when about to claim done → run the check first.* (Eval / definition-of-done research: docs/projects/06-cogito-upgrade-roadmap.md.)
 
+### 5c. Decorrelated review — critique only grounded claims
+
+Correcting your own *reasoning* in place tends to degrade it, not improve it (intrinsic self-correction is unreliable — arXiv 2310.01798; TACL 2406.01297). So never let "I thought about it again and it looks right" stand as verification — it is the weakest signal, and the one our scars keep coming from. Channel critique to signals that do not depend on the author being right:
+
+- **Grounded signals** (trust these) — tests, real runtime outcomes, user corrections, the artifact itself. These are §5b's checks.
+- **Decorrelated review** — for a substantive "done" claim, spawn the fresh-context **cogito-reviewer** subagent (`.claude/agents/`): a separate context with no stake restates the definition-of-done and re-checks it against grounded signals (CoVe-style independent verification). Author and checker sharing one context *is* the bias; a fresh context breaks it (this is design-qa generalized beyond the web).
+- **Principles critique** — checking work against a written rule (this skill, a definition-of-done file) beats a free-form "is this good?".
+
 ### 6. Closing reflection (brief)
 
 At the end of a substantial task, add two or three sentences:

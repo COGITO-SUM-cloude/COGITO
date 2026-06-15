@@ -24,6 +24,19 @@ task matches — Voyager's description-keyed skill library, native to the harnes
 | **adaptive-learning** | a concept surfaces in the work, the user asks how/why, or at session close — grow the user with small, plain-language teaching. Record: `docs/learning/log.md`. | in use |
 | **web-build-loop** | building, fixing, deploying, or QA-ing a website — prove the change by rendered pixels from a logged-out context + the asset's own HTTP status, never a green build. | battle-tested |
 
+## Agents (subagents — fresh-context specialists)
+Subagents live in `.claude/agents/` and run in a *separate* context, which is their
+value: they decorrelate a check or a search from the main thread.
+
+| Agent | Use it when |
+|---|---|
+| **cogito-reviewer** | before trusting a "done" / "fixed" / "works" claim — a fresh-context done-check that restates the definition-of-done and verifies it against grounded signals (command / test / build / HTTP / file / git), returning PASS / FAIL / UNVERIFIABLE with evidence. Read-only. |
+| **design-qa** | a web/visual change needs checking — loads the page through the "eyes", reads rendered pixels at desktop + mobile, inspects console/network, returns a prioritized findings report. Read-only. |
+
+(An agent invokable by `subagent_type` only appears after the session reloads its
+definitions — so verify a freshly-written agent on its next session, or proxy it
+through `general-purpose` meanwhile.)
+
 ## Adding a skill — the creation gate
 A skill is procedural memory **only after it has worked in a real session**
 (Voyager adds a skill only once a critic verifies it; this is §5 "verify outcomes"
