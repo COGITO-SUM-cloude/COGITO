@@ -36,6 +36,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/scripts/cogito-recall.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
