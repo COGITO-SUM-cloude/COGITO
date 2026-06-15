@@ -12,7 +12,9 @@ session start the most-overdue lesson's recap cue is surfaced automatically.
 `scripts/cogito-review.sh due` lists what's due; `… grade N pass|fail` records a
 review. (`box:0` = seeded, not yet in rotation.)
 
-**Field in focus:** Neuroscience (started 2026-06-13)
+**Field in focus:** Neuroscience (started 2026-06-13) — current focus: **nootropics & brain chemistry** (proven vs. hyped).
+**How the user learns best:** by *deriving it with hints* — give a nudge + a question, let him reason it out (don't hand over the answer). Record **observations, not labels**.
+**Lesson definitions** (the reusable "meaning" objects, learner-agnostic) live in `docs/learning/lessons/`; this log is the per-learner **progress** record.
 
 ---
 
