@@ -1,9 +1,9 @@
 ---
 name: cogito-consolidate
-description: Consolidation pass for the Cogito lessons ledger — cluster the ledger by tag, merge or supersede redundant/duplicate lessons into fewer higher-tier rules, and MOVE the raw lines into LESSONS-ARCHIVE.md with provenance (never delete). Use when the active ledger (skills/cogito-protocol/LESSONS.md) passes ~60 lessons, after a severe (I:9-10 / #critical) lesson lands, or when the user says "/consolidate", "consolidate the lessons", "compress/tidy the ledger". The companion to cogito-protocol §4b. Conservative by design — when in doubt, do not merge.
+description: Ledger maintenance for Cogito's lessons — keep the always-loaded set lean without losing anything, two ways. (1) CONSOLIDATE — cluster by tag, merge/supersede redundant lessons into fewer higher-tier rules. (2) DECAY — archive cold, explicitly-low-importance lessons (refresh-on-use keeps useful ones alive). Both MOVE raw lines into LESSONS-ARCHIVE.md with provenance (never delete) and end with the same conservation gate. Use when the active ledger (skills/cogito-protocol/LESSONS.md) passes ~60 lessons, after a severe (I:9-10 / #critical) lesson lands, or when the user says "/consolidate", "decay/prune/tidy/compress the ledger", "archive old lessons". The companion to cogito-protocol §4b. Conservative by design — when in doubt, keep.
 ---
 
-# Cogito — Consolidation Pass (`/consolidate`)
+# Cogito — Ledger Maintenance: Consolidate (`/consolidate`) + Decay
 
 The lessons ledger loads in full at every session start (the SessionStart hook
 greps `^- ` from `LESSONS.md`). That is cheap while the list is short and a
@@ -66,7 +66,36 @@ not.
    flattened. Commit faceless (`Cogito <cogito@users.noreply.github.com>`) with a
    message naming what merged into what and the before/after count.
 
+## Decay — archive cold, low-value lessons (helper: `scripts/cogito-decay.sh`)
+
+Consolidation removes *redundancy*; decay removes *staleness*. Same archive, same
+gate — only the trigger differs. A lesson decays when it stops earning its place
+in the always-loaded set.
+
+The rule (ACT-R activation ≈ recency × importance, with refresh-on-recall): a
+lesson is an archive candidate only when **all** hold —
+- it is **explicitly low-importance** (`[I:N]`, N ≤ 3). *Unscored lessons are
+  kept* — never assume a lesson is low-value just because no one scored it. (This
+  is the safety floor: 42 of the current 45 lessons are unscored and must not
+  decay by default.)
+- it is **cold**: its recency — the latest `[seen:]`/`[d:]` stamp in the line,
+  else the line's git-blame date — is older than ~90 days.
+- it is **off probation** (not in the most-recent ~5) and **not** `#critical` /
+  `[I:≥9]` (those never decay).
+
+**Refresh-on-use.** When you actually apply a lesson, stamp it:
+`scripts/cogito-decay.sh touch "<a few words of the lesson>"` writes
+`[seen:TODAY]` and resets its coldness. Use keeps a lesson alive; only the
+genuinely unused-and-minor ones fall away.
+
+**Procedure.** Run `scripts/cogito-decay.sh report` to list candidates with their
+age and importance. For each you agree has decayed, MOVE it verbatim into
+`LESSONS-ARCHIVE.md` under a `decayed: cold + low-value` block, then run
+`scripts/cogito-consolidate.sh verify` (the same conservation gate) and review the
+diff before committing. Nothing is deleted; git keeps the history.
+
 ## The one bias to remember
-Over-merge is the failure mode, not under-merge. A ledger that is slightly too
-long costs a little context; a rule that silently swallowed a distinct cause
-costs a repeated scar. **When in doubt, NOOP.**
+Over-pruning is the failure mode, not under-pruning — for both consolidation and
+decay. A ledger that is slightly too long costs a little context; a rule that
+silently swallowed a distinct cause, or an archived lesson that was still earning
+its place, costs a repeated scar. **When in doubt, keep (NOOP).**
