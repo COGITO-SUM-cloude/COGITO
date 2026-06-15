@@ -98,6 +98,15 @@ Each lesson is one file under `docs/learning/lessons/<field>/` (see `L-adenosine
 - New idea taught → add a learning-log entry with a recap cue, marked **derived** or
   **told**; it enters the review ladder at box 1.
 
+## Running it (two surfaces, one engine)
+- In a Claude session: `scripts/cogito-teach.sh [learner]` prints the session board (due
+  review + next unlocked lesson + the loop rules); the assistant then runs the loop.
+- Outside chat: `scripts/cogito-serve.sh [port]` — a localhost browser bridge (Phase 2 of
+  `docs/projects/07-vr-teacher-toolkit.md`) that serves `teacher/` and runs the SAME loop
+  via the LLM (reuses `cogito-openrouter.sh`; key stays server-side, binds 127.0.0.1).
+  Verified live 2026-06-15: opens with the due-review question, then hints, grounded in the
+  lesson object. This is the seam the future VR skin plugs into — same engine, new face.
+
 ## Off-switch
 Same measure as the protocol: more help than harm. If teaching adds ceremony, or the user
 just wants to ship, stop and serve the work. One good micro-lesson beats five skimmed.

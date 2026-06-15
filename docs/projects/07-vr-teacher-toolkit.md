@@ -199,7 +199,8 @@ The tools are fine alone; failures live in the gaps between them.
 - **Phase 1 — The brain, text only, on the user.** Extend the learning log into the FSRS
   `skills.json`; wire the constrained hint-ladder tutor prompt + BM25 over the lesson
   files. Prove the adaptive loop in plain text on neuroscience. (Golden-structure 1–4.)
-- **Phase 2 — The bridge.** Small local HTTP server exposes the brain; a plain browser
+- **Phase 2 — The bridge.** **(DONE 2026-06-15 — `scripts/cogito-serve.sh` + `teacher/`.)**
+  Small local HTTP server exposes the brain; a plain browser
   page runs the same loop (still 2D). Keys server-side, CORS set.
 - **Phase 3 — Voice.** Add HeadTTS/Kokoro (TTS) + browser STT + Silero VAD. The teacher
   talks and listens, still 2D. Latency hidden behind a "thinking" state.
