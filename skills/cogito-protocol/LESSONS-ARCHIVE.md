@@ -32,6 +32,10 @@ are added around them):
 
 ## Archived lessons
 
-_(none yet — the active ledger is still below the consolidation trigger. The
-mechanism is in place; the first real pass runs when `LESSONS.md` passes ~60
-lessons or a severe lesson lands. See skill: `cogito-consolidate`.)_
+### 2026-06-15 — communication style for the user (3 raw -> 1 #critical rule)
+> Early targeted pass (not the ~60 bulk trigger): the council's judge verified two of these lines CONTRADICTED each other and both loaded — the obsolete "baby steps" line was `#critical`/always-load while its correction was untagged/deferred. Merged into one current rule; raw lines kept here verbatim.
+> superseded by: `[#critical][#comms] How to talk to THIS user -> talk adult-to-adult: plain everyday words, short replies, explain by analogy not jargon, do the tech myself; NO emojis, no cheerleading, no "baby steps"/"tiny concepts" framing — "simpler" means less jargon, not talking down; re-read when a task feels complex.`
+
+- [#critical] Explained the work in dense jargon and long finish-line reviews -> the user is non-technical, has a limited vocabulary, and can't retain much, so technical replies don't help them and add friction -> ALWAYS use plain everyday words, short replies, and baby steps (one action at a time); do the tech myself; teach tiny concepts simply. This is a standing rule for this user.
+- User said "treat me like I'm 20, tired of the emojis" -> after being asked to simplify, I over-corrected into an emoji-heavy, over-cheerful, hand-holding tone that read as patronizing -> talk adult-to-adult: plain, simple words but NO emojis, no cheerleading, no "baby steps" framing. "Simpler" means less jargon, not treating them like a child.
+- [#critical][#comms] Slipped back into dense technical prose and a long diagnosis on a complex task, despite the standing non-technical-user rule -> under heavy cognitive load I defaulted to engineer-to-engineer register -> the user is non-technical: keep every reply short and plain, explain by analogy not jargon, no long reviews; re-read this rule the moment a task feels complex, because that is exactly when the slip happens.
