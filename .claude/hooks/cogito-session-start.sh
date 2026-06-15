@@ -47,3 +47,18 @@ if [ -f "$MISSION" ]; then
   cat "$MISSION"
   printf '\n----- end ACTIVE MISSION -----\n'
 fi
+
+# Surface the most-overdue learning recap (spaced repetition — skill #7). NEVER
+# fatal: the learning log is the human-growth twin of the lessons ledger, but a
+# missing/malformed log or script must never disturb the lesson-load path. The
+# command substitution swallows errors and the if-guard keeps set -e happy.
+REVIEW="$REPO/scripts/cogito-review.sh"
+if [ -x "$REVIEW" ]; then
+  recap="$("$REVIEW" due --quiet 2>/dev/null || true)"
+  if [ -n "$recap" ]; then
+    printf '\n----- LEARNING RECAP (spaced repetition — most overdue) -----\n'
+    printf '%s\n' "$recap"
+    printf 'Open with this recap cue; after they answer: scripts/cogito-review.sh grade <N> pass|fail\n'
+    printf -- '----- end LEARNING RECAP -----\n'
+  fi
+fi

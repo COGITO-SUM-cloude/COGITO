@@ -55,13 +55,31 @@ or they're tired or heads-down shipping, hold it.
 4. **One way to use it.**
 5. Write it to the learning log with a **recap cue**, and mark whether they **derived**
    it (gold) or were **told** it.
-6. **Next session, open with the recap cue** (retrieval), then build on it.
+6. **Next session, open with the recap cue** the hook surfaces (retrieval), grade the
+   result (`scripts/cogito-review.sh grade <N> pass|fail`), then build on it.
 
 ## The learning log (`docs/learning/log.md`) — the durable record
 Each entry: plain version · picture · real name · use it · recap cue · status
 (derived / told). Revisit on purpose. A log that is empty or never revisited means we're
 relearning, not compounding — the same failure as an empty lessons ledger, applied to the
 human.
+
+## Spaced repetition (the review schedule)
+Recap cues only fight forgetting if they actually come due. Each log lesson carries
+`box:N due:YYYY-MM-DD` — a **Leitner ladder** (boxes 1→6 = 1, 3, 7, 16, 35, 90 days).
+- **At session start** the SessionStart hook surfaces the most-overdue lesson's recap
+  cue automatically. Open with it (retrieval practice) before any new teaching.
+- **After they answer, grade it:** `scripts/cogito-review.sh grade <N> pass` (recalled
+  → promote to a longer interval) or `… grade <N> fail` (missed → back to box 1, see it
+  again tomorrow). Expanding intervals on success, reset on failure — desirable
+  difficulty, not cramming.
+- `scripts/cogito-review.sh list` shows the whole schedule; `due` shows what's ready
+  now. A newly taught lesson enters at box 1; a *seeded* idea stays `box:0` until it is
+  actually taught or derived.
+
+Honesty over theatre: grade `pass` only when they genuinely recalled it. A gamed ladder
+schedules the wrong reviews and the forgetting wins quietly — the spacing effect is only
+as good as the honesty of the grade.
 
 ## Relationship to other skills
 - `cogito-protocol` governs the system's reasoning + memory; this governs the human's

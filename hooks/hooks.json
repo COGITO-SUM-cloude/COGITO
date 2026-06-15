@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/cogito-session-start.sh\"" },
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/cogito-sync.sh\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/cogito-guard.sh\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

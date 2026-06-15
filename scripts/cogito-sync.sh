@@ -38,8 +38,32 @@ if [ ! -f "$DST/LESSONS.md" ]; then
   exit 0
 fi
 
-n="$(grep -c '^- ' "$DST/LESSONS.md" 2>/dev/null || echo '?')"
-echo "cogito: brain loaded from $src — $n lessons now in context. Do NOT repeat these:"
-echo "----- COGITO LESSONS  (SYMPTOM -> ROOT CAUSE -> RULE) -----"
-grep '^- ' "$DST/LESSONS.md"
-echo "----- end COGITO lessons -----"
+LEDGER="$DST/LESSONS.md"
+n="$(grep -c '^- ' "$LEDGER" 2>/dev/null || true)"; n="${n:-0}"
+
+# Index-then-load (skill #3): full-load only while the ledger is genuinely small;
+# past the threshold we switch to index + just-in-time retrieval. The default is
+# deliberately LOW (20) because the full ledger rides EVERY turn — ~50 lessons is
+# ~5k tokens/turn, which burns a metered plan's budget fast (measured via
+# scripts/cogito-budget.sh). In index mode the always-load set (#critical / [I:9-10])
+# still prints in full — so the must-know lessons are never deferred — and the rest
+# are one `grep` away. Raise COGITO_LOAD_THRESHOLD to go back to full-load.
+THRESHOLD="${COGITO_LOAD_THRESHOLD:-20}"
+if [ "$n" -le "$THRESHOLD" ]; then
+  # --- full-load (unchanged; the safety net) ---
+  echo "cogito: brain loaded from $src — $n lessons now in context. Do NOT repeat these:"
+  echo "----- COGITO LESSONS  (SYMPTOM -> ROOT CAUSE -> RULE) -----"
+  grep '^- ' "$LEDGER"
+  echo "----- end COGITO lessons -----"
+else
+  # --- index mode (just-in-time retrieval) ---
+  echo "cogito: brain loaded from $src — $n lessons (index mode; grep for depth)."
+  echo "----- ALWAYS-LOAD (critical / severe — these never defer) -----"
+  grep -E '^- .*(\[I:(9|10)\]|#critical)' "$LEDGER" || echo "  (none flagged critical)"
+  echo "----- COGITO LESSONS INDEX  (tag -> count; grep a tag in LESSONS.md for depth) -----"
+  grep '^- ' "$LEDGER" | grep -oE '\[#[a-z][a-z-]*\]' | sort | uniq -c | sort -rn | sed 's/^/  /' \
+    || echo "  (untagged — lessons exist but carry no tags yet)"
+  echo "  $n lessons are not all printed (context-rot guard). To recall depth on a topic:"
+  echo "    grep -i '<keyword>' ~/.claude/skills/cogito-protocol/LESSONS.md"
+  echo "----- end COGITO INDEX -----"
+fi

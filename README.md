@@ -38,6 +38,23 @@ cd COGITO
 accumulated `LESSONS.md`, and proves the ledger is writable by re-reading a test write
 (protocol §4b) — so "installed" means *verified live*, not *probably done*.
 
+### Or install as a plugin (one command, any repo)
+
+Cogito is also a Claude Code **plugin** — every skill, subagent, and the brain-sync
+hooks in one install, shared across all your repos:
+
+```bash
+/plugin marketplace add COGITO-SUM-cloude/COGITO
+/plugin install cogito@cogito
+```
+
+It ships the `cogito-protocol`, `adaptive-learning`, `web-build-loop` and
+`cogito-consolidate` skills, the `cogito-reviewer` and `design-qa` subagents, and a
+`SessionStart` hook that loads the lessons ledger into every session (in any repo it
+reads the public ledger anonymously). The repo stays usable directly too — `install.sh`
+and the plugin are two front doors to the same files. (`claude plugin validate .` checks
+the manifest.)
+
 ---
 
 ## What's in here
@@ -49,6 +66,7 @@ accumulated `LESSONS.md`, and proves the ledger is writable by re-reading a test
 | `CLAUDE.md` | Project-level operating instructions: apply the protocol, capture lessons, checkpoint on command. |
 | `install.sh` | One-shot installer + ledger verification. |
 | `.claude/` | SessionStart hook that auto-loads the protocol and guarantees the ledger exists. |
+| `.claude-plugin/` | Plugin manifest + marketplace, so Cogito installs via `/plugin install cogito@cogito`. |
 | `web/` | The public face of Cogito — a static page, no build step. |
 | `docs/` | Room to grow. |
 

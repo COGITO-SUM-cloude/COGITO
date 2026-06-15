@@ -87,7 +87,17 @@ At session start, verify the ledger file is actually reachable and writable AND 
 
 At checkpoint, the lessons section ships inside the state file the user keeps. When roughly five or more lessons accumulate, or any single lesson is severe, propose a skill update: rewrite the relevant rule into this file or the user's systems-thinking skill, and have the user commit it to a repo they own. The user is the write-path for skill evolution; Claude is the compiler. Do not silently rely on automatic memory — it compresses by its own priorities, not the project's.
 
-**Lesson format + scale (2026-06-15).** Tag each lesson and score its importance: `[#tag][#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE` (importance 1 = minor, 10 = severe/safety; tags like `#git #deploy #eyes #verify #memory #web #process`). Tags are the **embedding-free retrieval index** — grep the relevant tag for just-in-time depth rather than relying only on the full print. When the ledger passes ~60 lessons (or after a severe one), run a **consolidation pass** via the `cogito-consolidate` skill: cluster by tag, merge/supersede into fewer higher-tier rules that cite the raw lines they replace, and **move** the raw ones to `LESSONS-ARCHIVE.md` (never delete — git keeps history); a probation buffer + a runnable conservation check guard against over-merge. `#critical` / importance ≥ 9 lessons always load. (Rationale + sources: docs/projects/06-cogito-upgrade-roadmap.md.)
+**Lesson format + scale (2026-06-15).** Tag each lesson and score its importance: `[#tag][#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE` (importance 1 = minor, 10 = severe/safety; tags like `#git #deploy #eyes #verify #memory #web #process`). Tags are the **embedding-free retrieval index** — grep the relevant tag for just-in-time depth rather than relying only on the full print. The SessionStart loader applies this automatically: it full-loads while the ledger is small (≤ ~80 lessons — the safety net) and switches to **index-then-load** above that, always-loading `#critical`/`[I:≥9]`, printing the tag index, and deferring the rest to on-demand grep (`COGITO_LOAD_THRESHOLD` tunes the switch). When the ledger passes ~60 lessons (or after a severe one), run a **consolidation pass** — skill `cogito-consolidate`, helper `scripts/cogito-consolidate.sh`: `report` to cluster by tag, then merge/supersede redundant lessons into fewer higher-tier rules that cite the raw lines they replace, **move** the raw ones (verbatim) to `LESSONS-ARCHIVE.md` (never delete — git keeps history), and run `cogito-consolidate.sh verify` to prove nothing was lost before committing. The most recent ~5 lessons are on **probation** (not merged until they prove recurring); `#critical` / importance ≥ 9 lessons always load. Beyond merging, **decay** retires staleness (same skill, helper `scripts/cogito-decay.sh`): archive a lesson only when it is explicitly low-importance (`[I:≤3]`) AND cold (>~90 days) AND off-probation — never `#critical` / `[I:≥9]` / unscored. Optional recency stamps `[d:YYYY-MM-DD]` (learned) / `[seen:YYYY-MM-DD]` (last applied; `cogito-decay.sh touch` writes it) feed the cold-test, else recency falls back to the line's git-blame date. (Rationale + sources: docs/projects/06-cogito-upgrade-roadmap.md.)
+
+### 4c. Memory taxonomy + library hygiene (CoALA)
+
+Cogito's memory maps onto the CoALA types, each with one durable home (full map: `skills/INDEX.md`):
+- **Episodic** (what happened) → checkpoints `docs/checkpoints/` + learning log `docs/learning/log.md`.
+- **Semantic** (earned rules) → the lessons ledger `LESSONS.md` (+ `LESSONS-ARCHIVE.md`).
+- **Procedural** (how to act) → skills in `skills/`, catalogued in `skills/INDEX.md` (description-keyed, loaded just-in-time).
+- **Working** (this turn) → the context window + the state file `docs/ACTIVE-MISSION.md`.
+
+**Skill-creation gate.** A skill is procedural memory only after it has WORKED in a real session (Voyager's verified-skill rule = §5 "verify outcomes" applied to the library). Before committing a new skill, run `scripts/cogito-skill-check.sh <name>` (frontmatter + index checks) and be able to name the real task it ran on and the observed outcome that proved it; then add it to `skills/INDEX.md`. A skill added on spec is a hypothesis — keep it on a branch until a session proves it.
 
 ### 5. Solve vs. ask (honest capability boundary)
 
@@ -108,6 +118,18 @@ Never fake the missing part. A precise help request is a success state, not a fa
 - If an outcome genuinely cannot be scripted, state the **specific observed result** you checked — never "build passed", "captured", or "probably".
 
 This turns §5 from a belief into an artifact, and is the mechanical form of the if-then enforcer: *when about to claim done → run the check first.* (Eval / definition-of-done research: docs/projects/06-cogito-upgrade-roadmap.md.)
+
+### 5c. Decorrelated review — critique only grounded claims
+
+Correcting your own *reasoning* in place tends to degrade it, not improve it (intrinsic self-correction is unreliable — arXiv 2310.01798; TACL 2406.01297). So never let "I thought about it again and it looks right" stand as verification — it is the weakest signal, and the one our scars keep coming from. Channel critique to signals that do not depend on the author being right:
+
+- **Grounded signals** (trust these) — tests, real runtime outcomes, user corrections, the artifact itself. These are §5b's checks.
+- **Decorrelated review** — for a substantive "done" claim, spawn the fresh-context **cogito-reviewer** subagent (`.claude/agents/`): a separate context with no stake restates the definition-of-done and re-checks it against grounded signals (CoVe-style independent verification). Author and checker sharing one context *is* the bias; a fresh context breaks it (this is design-qa generalized beyond the web).
+- **Principles critique** — checking work against a written rule (this skill, a definition-of-done file) beats a free-form "is this good?".
+
+### 5d. Boundary guards — enforce, don't just remember
+
+A loaded lesson does not fire on its own (knowing ≠ doing). For the few mistakes that recur *despite* being known, bind the rule to its trigger as a **PreToolUse hook** that blocks the command at the boundary: `scripts/cogito-guard.sh` denies self-matching `pkill -f`/`--full` (matches the full command line — killed our own shell twice) and `rm -rf` on a root path, and **fails open** on any error (only a positive match denies, so a buggy guard never bricks a session). Detection is anchored to command position, so a command that merely *mentions* a dangerous string is not blocked. Wired in `.claude/settings.json` and the plugin's `hooks/hooks.json`. This is the mechanical form of implementation-intentions — *when about to run X → it is stopped, before the slip* — and the enforcer that learning-log Lesson 3 calls for. (A blocking *Stop* gate was considered and deliberately deferred: a hook that can prevent finishing is high-risk, and §5b/§5c already enforce verification without that friction.)
 
 ### 6. Closing reflection (brief)
 

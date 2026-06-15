@@ -1,24 +1,29 @@
 # ACTIVE MISSION — resume pointer
-_Surfaced at session start so a new session resumes instantly. Delete/replace when the mission changes._
+_Short on purpose: this is read into every session, so it costs tokens each turn. Plain language only — the user is non-technical._
 
-## When the user says "Cogito"
-Do NOT re-interview from scratch — the mission is already specced. Greet in one line, confirm, then CONTINUE down the list.
+When the user says "Cogito": greet in one line, confirm, continue. Don't re-interview.
 
-## Mission
-Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap.md`, going down the ROI-ranked list.
+## Mission — Cogito tooling first, then resume the AI teacher
+Make the memory trustworthy and consistent across sessions BEFORE building more on top of it.
 
-## Where we are (2026-06-15)
-- **DONE (Tier 1):** #1 runnable verification gate (SKILL §5b); #2 lesson tags + importance `[I:1-10]` convention.
-- **DONE (#4) consolidation pass:** new `cogito-consolidate` skill (cluster→merge/supersede→archive w/ provenance; probation buffer; runnable conservation check) + `skills/cogito-protocol/LESSONS-ARCHIVE.md`; first real pass merged the 2 security-classifier captures → 1 `[I:9]` rule, verified end-to-end (ledger loads at 43, conservation held; gate caught + fixed a welded-line corruption).
-- **NEXT, in order:** #5 decay/archive → #6 CoALA taxonomy + skill-creation gate → #7 spaced-repetition for the learning log.
-- **HOLD / extra care (blast radius — confirm + verify hard):** #3 index-then-load (touches the SessionStart load path), #8 guard/auto-capture hooks (tool boundary). A memory system that fails to load its lessons is the worst outcome — keep full-load as a safety net and prove the change before trusting it.
-- **Tier 3 after:** #9 package as a plugin, #10 fresh-context reviewer subagent.
+## The fix (2026-06-15): one brain, not five
+Symptom: each session read its memory from its OWN branch, so sessions drifted apart and a new one re-did finished work ("the live consistency feature is bugging").
+Fix:
+1. `main` is the ONE canonical brain. All stranded session work was reconciled into it — the completed 10-item roadmap, the council, the AI-teacher start, and the full lessons ledger (now 56).
+2. The SessionStart hooks load the brain from `origin/main` (a fixed point), NOT the local branch, with the local copy as an offline fallback. Sessions can't drift apart again.
+3. Write-back: at checkpoint, converge this session's new lessons + this file back to `main`. `main` is protected — ASK the user for a clear yes before updating it; never auto-push.
 
-## Guardrails (hard-won this session)
-- Sync ONLY `main` + the active working branch. NEVER push to old session branches — a stale push resurrects deleted ones.
-- Verify every change by re-reading/running it (SKILL §5b). Never trust "probably / build passed / captured."
+## Next, in order
+1. Trust-but-VERIFY confident-wright's "roadmap COMPLETE" claim — actually RUN each tool (#3 index-load, #5 decay, #6 skill-gate, #7 spaced-rep, #8 guard, #9 plugin, #10 reviewer) and confirm it works before trusting "done".
+2. Council + Hermes direction — user asked for an options brief first; don't build until chosen.
+3. Resume the AI teacher (`docs/checkpoints/2026-06-15-ai-teacher-pivot.md`) once the base is trusted.
+
+## Guardrails (always on)
+- One brain = `main`. Sync only `main` + the active branch. NEVER push to old session branches (a stale push resurrects deleted ones).
+- `main` is protected: update it only with the user's explicit yes to that exact action.
 - Faceless: commit as `Cogito <cogito@users.noreply.github.com>`; nothing personal in artifacts.
-- New lessons use the tagged format: `[#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE`.
+- Verify by running/re-reading — never "probably / build passed / captured."
+- Plain language, short replies — the user is non-technical.
 
 ## Full context
-Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-consolidation.md`
+Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Teacher: `docs/checkpoints/2026-06-15-ai-teacher-pivot.md` · This fix: `docs/checkpoints/2026-06-15-consistency-fix.md`

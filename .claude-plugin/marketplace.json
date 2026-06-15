@@ -1,0 +1,13 @@
+{
+  "name": "cogito",
+  "owner": { "name": "Cogito" },
+  "description": "The Cogito marketplace — a metacognitive operating protocol with durable, self-maintaining memory, installable into any repo.",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "cogito",
+      "source": "./",
+      "description": "Cogito — metacognitive protocol + durable self-maintaining memory (skills, subagents, brain-sync hooks) installable into any repo."
+    }
+  ]
+}

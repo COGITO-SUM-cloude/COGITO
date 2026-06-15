@@ -12,6 +12,8 @@ CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 SKILL_SRC="$REPO_DIR/skills/cogito-protocol"
 SKILL_DST="$CLAUDE_HOME/skills/cogito-protocol"
 LEDGER="$SKILL_DST/LESSONS.md"
+ARCHIVE_SRC="$SKILL_SRC/LESSONS-ARCHIVE.md"
+ARCHIVE_DST="$SKILL_DST/LESSONS-ARCHIVE.md"
 
 say() { printf '  %s\n' "$*"; }
 
@@ -31,6 +33,17 @@ if [ ! -f "$LEDGER" ]; then
   say "seeded LESSONS.md"
 else
   say "kept existing LESSONS.md (preserving accumulated lessons)"
+fi
+
+# Seed the consolidation archive too (raw lessons retired by /consolidate land
+# here; the loader never reads it, so archiving removes a lesson from context
+# without losing it). Preserve any accumulated archive, like the ledger.
+if [ -f "$ARCHIVE_SRC" ]; then
+  if [ ! -f "$ARCHIVE_DST" ]; then
+    cp "$ARCHIVE_SRC" "$ARCHIVE_DST"; say "seeded LESSONS-ARCHIVE.md"
+  else
+    say "kept existing LESSONS-ARCHIVE.md"
+  fi
 fi
 
 # --- 1b. Install companion skills (every other skill under skills/) -----------
