@@ -47,17 +47,13 @@ done
 
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo HEAD)"
 
-# Is a fast-forward of main even possible (only consulted if opted in)?
-ff_ok="no"
-if [ "$TO_MAIN" = "1" ]; then
-  git fetch -q origin "$MAIN_BRANCH" 2>/dev/null || true
-  git merge-base --is-ancestor "origin/$MAIN_BRANCH" HEAD 2>/dev/null && ff_ok="yes"
-fi
+# Fetch main up front (used by the dry-run report and the brain-only converge below).
+if [ "$TO_MAIN" = "1" ]; then git fetch -q origin "$MAIN_BRANCH" 2>/dev/null || true; fi
 
 if [ "$DRYRUN" = "1" ]; then
   printf 'cogito[dryrun]: would commit %d brain file(s) on %s: %s\n' \
     "${#changed[@]}" "$branch" "$(printf '%s ' "${changed[@]}")"
-  printf 'cogito[dryrun]: push to main -> enabled=%s, fast-forward-possible=%s\n' "$TO_MAIN" "$ff_ok"
+  printf 'cogito[dryrun]: converge BRAIN-ONLY to main -> enabled=%s\n' "$TO_MAIN"
   exit 0
 fi
 
@@ -70,8 +66,56 @@ GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="cogito@users.noreply.github.com
 git push -q origin "HEAD:$branch" 2>/dev/null || true   # durable on the branch
 
 synced="branch '$branch' (durable; say \"update main\" to make it canonical)"
-if [ "$TO_MAIN" = "1" ] && [ "$ff_ok" = "yes" ]; then
-  git push -q origin "HEAD:$MAIN_BRANCH" 2>/dev/null && synced="$MAIN_BRANCH (fast-forward, opt-in)"
+
+# Converge to main — BRAIN FILES ONLY, never the whole branch HEAD. Pushing HEAD to
+# main once let a withheld non-brain commit parked on the branch ride along (see the
+# [#git][#memory] lesson). So instead of `git push HEAD:main`, synthesise a commit =
+# origin/main's tree with ONLY the brain paths replaced by their just-committed
+# blobs, parented on origin/main (a true fast-forward), and push that. Built in a
+# throwaway index so the real working tree / HEAD are never touched; non-force so a
+# raced main fails safe; faceless author.
+if [ "$TO_MAIN" = "1" ]; then
+  base="$(git rev-parse -q --verify "origin/$MAIN_BRANCH" 2>/dev/null || true)"
+  if [ -n "$base" ]; then
+    # Don't clobber a brain edit another session already landed on main: our HEAD
+    # brain = (loaded from main) + our appends, so every brain line on main should
+    # already be in ours. If main has a brain line we lack, a foreign edit raced us
+    # — leave main untouched (stay branch-only) rather than overwrite it.
+    foreign="no"
+    for p in "${changed[@]}"; do
+      git cat-file -e "origin/$MAIN_BRANCH:$p" 2>/dev/null || continue
+      cnt="$(git show "origin/$MAIN_BRANCH:$p" 2>/dev/null \
+              | grep -vxF -f <(git show "HEAD:$p" 2>/dev/null) 2>/dev/null | wc -l | tr -dc '0-9')"
+      if [ -n "$cnt" ] && [ "$cnt" -gt 0 ]; then foreign="yes"; break; fi
+    done
+    if [ "$foreign" = "yes" ]; then
+      synced="branch '$branch' (main left alone — its brain changed under us)"
+    else
+      tmpidx="$(mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/cogito-converge.$$")"
+      ok="yes"
+      GIT_INDEX_FILE="$tmpidx" git read-tree "$base" 2>/dev/null || ok="no"
+      for p in "${changed[@]}"; do
+        [ "$ok" = "yes" ] || break
+        blob="$(git rev-parse -q --verify "HEAD:$p" 2>/dev/null || true)"
+        [ -n "$blob" ] || { ok="no"; break; }
+        mode="$(git ls-tree HEAD -- "$p" 2>/dev/null | awk '{print $1; exit}')"
+        [ -n "$mode" ] || mode=100644
+        GIT_INDEX_FILE="$tmpidx" git update-index --add --cacheinfo "$mode,$blob,$p" 2>/dev/null || ok="no"
+      done
+      newtree="$(GIT_INDEX_FILE="$tmpidx" git write-tree 2>/dev/null || true)"
+      basetree="$(git rev-parse -q --verify "$base^{tree}" 2>/dev/null || true)"
+      rm -f "$tmpidx" 2>/dev/null || true
+      if [ "$ok" = "yes" ] && [ -n "$newtree" ] && [ "$newtree" != "$basetree" ]; then
+        newcommit="$(GIT_AUTHOR_NAME="Cogito" GIT_AUTHOR_EMAIL="cogito@users.noreply.github.com" \
+                     GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="cogito@users.noreply.github.com" \
+                     git commit-tree "$newtree" -p "$base" \
+                     -m "cogito: converge brain to main [stop-hook]" 2>/dev/null || true)"
+        [ -n "$newcommit" ] \
+          && git push -q origin "$newcommit:$MAIN_BRANCH" 2>/dev/null \
+          && synced="$MAIN_BRANCH (brain-only, opt-in)"
+      fi
+    fi
+  fi
 fi
 
 printf 'cogito: brain saved -> %s (%d file[s])\n' "$synced" "${#changed[@]}"
