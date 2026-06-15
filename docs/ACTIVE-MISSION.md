@@ -26,4 +26,4 @@ Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap
 - New lessons use the tagged format: `[#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE`.
 
 ## Full context
-Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-tier2-complete.md`
+Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-session-close.md`
