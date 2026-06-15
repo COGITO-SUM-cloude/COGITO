@@ -15,8 +15,8 @@ re-skin of this one._
   brain-boosters from **hyped** ones. The world's most-used "nootropic" (caffeine)
   turns out to be a *blocker*, not a booster; and the most powerful lever (sleep) is
   free. Get this and the whole nootropics landscape reads differently.
-- **Prerequisites:** Lesson 1 (retrieval practice — "you remember what you work for");
-  connects directly to the seeded Lesson 2 ("why a tired brain can't learn").
+- **Prerequisites:** [[L1-retrieval-practice]] (retrieval practice — "you remember what you work for");
+  connects directly to the seeded [[L2-tired-brain-cant-learn]] ("why a tired brain can't learn").
 - **Mastery (observable):** The learner can explain, **unprompted and in their own
   words**, that (a) tiredness ≈ adenosine building up, (b) sleep clears it, and
   (c) caffeine blocks the signal rather than adding energy. Bonus: they connect the
