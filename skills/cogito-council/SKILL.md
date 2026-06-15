@@ -35,7 +35,14 @@ repeatable.
      / contrarian**, or roles natural to the question;
    - vary **effort** (a couple deep, one fast) and framing;
    - require each to ground its claims (a check, a source, a real constraint) and
-     to name its own confidence and blind spots.
+     to name its own confidence and blind spots;
+   - **always add the non-Claude voice:** pipe the sharpened question through
+     `scripts/cogito-openrouter.sh` and include its reply as one panelist — a free
+     non-Claude model, the decorrelated juror that cures "one voice in triplicate".
+     It exits cleanly with no key set, so it is always safe to call. **Capture which
+     model actually answered** (the script prints `answered by <model>` on stderr):
+     free models get silently rate-limited and swapped down the fallback chain, and
+     the council must never mistake the fallback for the intended voice.
 3. **Judge — don't average.** Hand all panel answers to the **cogito-judge**
    subagent (or, until it has loaded, a `general-purpose` proxy carrying the judge
    role). It returns the Fusion-style comparison: **consensus** (treat as
@@ -44,7 +51,9 @@ repeatable.
 4. **Synthesize + verify.** Write the final answer from the judge's analysis: lead
    with consensus, surface the live contradictions honestly, fold in the best
    unique insight, address the blind spots. Verify any grounded claim (§5b) before
-   presenting it as fact.
+   presenting it as fact. **Note which non-Claude model actually answered** (or that
+   the voice was unavailable), so a silent fallback is never mistaken for the
+   intended voice.
 
 ## Distinctness is the whole game (the Claude-only caveat)
 One model answering five times helps only if the five are genuinely independent
@@ -65,12 +74,15 @@ replace one or more panelists with a call to `openrouter/fusion` (or a specific
 GPT/Gemini model); the judge and synthesis steps are unchanged.
 
 **Now wired (free tier):** `scripts/cogito-openrouter.sh` calls a free non-Claude
-model (default `deepseek/deepseek-r1:free`), reading the key from the
-`$OPENROUTER_API_KEY` environment secret — never argv, never a file. Use it as ONE
-panelist: pipe the sharpened question into it and hand its answer to `cogito-judge`
-alongside the Claude panelists (this is the decorrelated voice that cures "one
-voice in triplicate"). With no key set it exits cleanly and the council stays
-Claude-only — so it is always safe to call. Phase 3 (run a
+model, reading the key from the `$OPENROUTER_API_KEY` environment secret — never
+argv, never a file. Its default is a **fallback chain** that prefers Hermes 3
+(`nousresearch/hermes-3-llama-3.1-405b:free`, the user's pick) and falls through to
+other free models when that is rate-limited — so the script reports `answered by
+<model>` on stderr and the synthesis must surface it (the intended voice can be
+silently swapped for a fallback). This is **now part of the standard procedure**
+(step 2): its answer goes to `cogito-judge` alongside the Claude panelists as the
+decorrelated voice that cures "one voice in triplicate". With no key set it exits
+cleanly and the council stays Claude-only — so it is always safe to call. Phase 3 (run a
 panel of local models on your own machine) needs stronger hardware but the
 procedure is identical. The council is built so *how you use it* never changes as
 the panel behind it gets stronger.
