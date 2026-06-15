@@ -5,16 +5,19 @@
 # existing scripts/cogito-openrouter.sh (so the API key stays in its one vetted path —
 # server-side only, never the browser). Serves the chat UI in teacher/.
 #
-#   scripts/cogito-serve.sh [port]      (default 8133; binds 127.0.0.1 only)
+#   scripts/cogito-serve.sh [port] [learner]      (default port 8133, learner 'primary')
 #   then open http://127.0.0.1:8133
 set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PORT="${1:-8133}"
+LEARNER="${2:-${COGITO_LEARNER:-primary}}"
 
-exec env COGITO_ROOT="$ROOT" COGITO_PORT="$PORT" python3 - <<'PY'
+exec env COGITO_ROOT="$ROOT" COGITO_PORT="$PORT" COGITO_LEARNER="$LEARNER" python3 - <<'PY'
 import os, sys, json, re, subprocess, http.server
 ROOT = os.environ["COGITO_ROOT"]
 PORT = int(os.environ.get("COGITO_PORT", "8133"))
+LEARNER = os.environ.get("COGITO_LEARNER", "primary")
+PROFILE_REL = "learners/%s/profile.md" % LEARNER
 TEACHER_DIR = os.path.join(ROOT, "teacher")
 LESSON_PATH = "docs/learning/lessons/neuroscience/L-adenosine.md"
 
@@ -62,11 +65,61 @@ def assess_recall(cue, answer):
     reply, err = call_llm(prompt)
     if err or not reply.strip():
         return None
-    w = reply.strip().upper().split()[0].strip(".:,!")
-    return w if w in ("PASS", "FAIL", "SKIP") else None
+    up = reply.strip().upper()
+    if "SKIP" in up: return "SKIP"
+    if "FAIL" in up: return "FAIL"
+    if "PASS" in up: return "PASS"
+    return None
+
+def lesson_field(label):
+    m = re.search(r'\*\*' + label + r'[^:]*:\*\*\s*(.+?)(?=\n-\s*\*\*|\n##|\Z)', read(LESSON_PATH), re.S)
+    return re.sub(r'\s+', ' ', m.group(1)).strip() if m else ""
+
+def current_learning_skill():
+    # the skill the learner is mid-way through (first profile row in state 'learning')
+    for line in read(PROFILE_REL).splitlines():
+        if line.strip().startswith("|"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if len(cells) >= 5 and cells[3].lower() == "learning":
+                return cells[0]
+    return None
+
+def assess_mastery(transcript):
+    crit = lesson_field("Mastery")
+    if not crit:
+        return None
+    prompt = ("A lesson's mastery test is:\n%s\n\nThe learner said, across the session:\n%s\n\n"
+              "Has the learner MET that test — explained it correctly in their OWN words, unprompted? "
+              "Reply ONE word only: MASTERED or NOTYET." % (crit, transcript))
+    reply, err = call_llm(prompt)
+    if err or not reply.strip():
+        return None
+    up = reply.strip().upper().replace(" ", "")
+    if "NOTYET" in up: return "NOTYET"
+    if "MASTERED" in up: return "MASTERED"
+    return None
+
+def advance_skill(skill):
+    # profile write-back: flip the skill's state cell learning -> mastered.
+    import datetime
+    path = os.path.join(ROOT, PROFILE_REL)
+    try:
+        prof = open(path, encoding="utf-8").read()
+    except Exception:
+        return
+    today, out = datetime.date.today().isoformat(), []
+    for line in prof.splitlines():
+        s = line.strip()
+        if s.startswith("|") and s.strip("|").split("|")[0].strip() == skill:
+            cells = [c.strip() for c in s.strip("|").split("|")]
+            if len(cells) >= 5:
+                cells[3], cells[4] = "mastered", "%s mastered (auto)" % today
+                line = "| " + " | ".join(cells) + " |"
+        out.append(line)
+    open(path, "w", encoding="utf-8").write("\n".join(out) + ("\n" if prof.endswith("\n") else ""))
 
 def build_prompt(messages):
-    profile, lesson, cue = read("learners/primary/profile.md"), read(LESSON_PATH), due_review()[1]
+    profile, lesson, cue = read(PROFILE_REL), read(LESSON_PATH), due_review()[1]
     if any(m.get("role") == "user" for m in messages):
         convo = "\n".join("%s: %s" % (m.get("role","user").upper(), m.get("content","")) for m in messages)
     else:
@@ -127,6 +180,16 @@ class H(http.server.BaseHTTPRequestHandler):
         reply, err = call_llm(build_prompt(messages))
         out = {"reply": reply} if not err else {"error": err}
         if graded: out["graded"] = graded
+        # write-back #2: advance the current skill to 'mastered' once the learner meets its
+        # observable mastery test in their own words. Self-limiting — once advanced, there is
+        # no 'learning' skill left to assess.
+        if len([m for m in messages if m.get("role") == "user"]) >= 2:
+            skill = current_learning_skill()
+            if skill:
+                transcript = "\n".join("%s: %s" % (m.get("role", ""), m.get("content", "")) for m in messages)
+                if assess_mastery(transcript) == "MASTERED":
+                    advance_skill(skill)
+                    out["mastered"] = skill
         return self._send(200, json.dumps(out))
 
 httpd = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), H)

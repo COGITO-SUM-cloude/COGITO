@@ -97,6 +97,11 @@ Each lesson is one file under `docs/learning/lessons/<field>/` (see `L-adenosine
   prereqs are now mastered.
 - New idea taught → add a learning-log entry with a recap cue, marked **derived** or
   **told**; it enters the review ladder at box 1.
+- **Automated (browser bridge):** `scripts/cogito-serve.sh [port] [learner]` now does the
+  first two on its own — it grades the opening review (`cogito-review.sh`) and flips a skill
+  to `mastered` when the learner meets its observable mastery test, judged by a narrow
+  PASS/MASTERED call (write-back; verified live 2026-06-15). Per-learner, so the sibling runs
+  with `cogito-serve.sh 8133 sibling`.
 
 ## Running it (two surfaces, one engine)
 - In a Claude session: `scripts/cogito-teach.sh [learner]` prints the session board (due
