@@ -33,7 +33,7 @@ review. (`box:0` = seeded, not yet in rotation.)
   looking at it or walking it?"
 - **Status:** ✓ Derived by the user (2026-06-13) — chose "B, the struggle one" and
   reasoned it out. Earned, not just told.
-- **Review:** box:1 due:2026-06-14
+- **Review:** box:2 due:2026-06-18
 
 ---
 
