@@ -12,7 +12,7 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PORT="${1:-8133}"
 
 exec env COGITO_ROOT="$ROOT" COGITO_PORT="$PORT" python3 - <<'PY'
-import os, sys, json, subprocess, http.server
+import os, sys, json, re, subprocess, http.server
 ROOT = os.environ["COGITO_ROOT"]
 PORT = int(os.environ.get("COGITO_PORT", "8133"))
 TEACHER_DIR = os.path.join(ROOT, "teacher")
@@ -34,15 +34,39 @@ def read(rel):
         with open(os.path.join(ROOT, rel), encoding="utf-8") as f: return f.read()
     except Exception: return ""
 
-def due_cue():
+def due_review():
+    # (lesson_number, recap_cue) for the most-overdue item, via the existing scheduler.
     try:
-        out = subprocess.run(["bash", os.path.join(ROOT, "scripts/cogito-review.sh"), "due", "--quiet"],
-                             capture_output=True, text=True, cwd=ROOT, timeout=15)
-        return out.stdout.strip()
-    except Exception: return ""
+        lines = subprocess.run(["bash", os.path.join(ROOT, "scripts/cogito-review.sh"), "due", "--quiet"],
+                               capture_output=True, text=True, cwd=ROOT, timeout=15).stdout.strip().splitlines()
+    except Exception:
+        return (None, "")
+    if not lines:
+        return (None, "")
+    m = re.match(r'Lesson (\d+)', lines[0])
+    return (int(m.group(1)) if m else None, lines[1] if len(lines) > 1 else "")
+
+def grade_review(num, result):
+    # write-back: record the spaced-repetition result via the existing scheduler.
+    try:
+        subprocess.run(["bash", os.path.join(ROOT, "scripts/cogito-review.sh"), "grade", str(num), result],
+                       capture_output=True, text=True, cwd=ROOT, timeout=15)
+    except Exception:
+        pass
+
+def assess_recall(cue, answer):
+    # one narrow PASS/FAIL/SKIP judgment — binary tasks are reliable even on free models.
+    prompt = ('A learner was asked this review question:\n"%s"\nThey answered:\n"%s"\n'
+              'Did they recall it correctly? Reply with ONE word only: PASS, FAIL, or SKIP '
+              '(SKIP if they did not actually attempt it).' % (cue, answer))
+    reply, err = call_llm(prompt)
+    if err or not reply.strip():
+        return None
+    w = reply.strip().upper().split()[0].strip(".:,!")
+    return w if w in ("PASS", "FAIL", "SKIP") else None
 
 def build_prompt(messages):
-    profile, lesson, cue = read("learners/primary/profile.md"), read(LESSON_PATH), due_cue()
+    profile, lesson, cue = read("learners/primary/profile.md"), read(LESSON_PATH), due_review()[1]
     if any(m.get("role") == "user" for m in messages):
         convo = "\n".join("%s: %s" % (m.get("role","user").upper(), m.get("content","")) for m in messages)
     else:
@@ -88,8 +112,22 @@ class H(http.server.BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length", 0))
         try: payload = json.loads(self.rfile.read(n) or b"{}")
         except Exception: payload = {}
-        reply, err = call_llm(build_prompt(payload.get("messages", [])))
-        return self._send(200, json.dumps({"reply": reply} if not err else {"error": err}))
+        messages = payload.get("messages", [])
+        # write-back: on the learner's FIRST answer (the review opener), grade the recall
+        # and record it through the scheduler — once per session, not every turn.
+        graded = None
+        user_msgs = [m for m in messages if m.get("role") == "user"]
+        if len(user_msgs) == 1:
+            num, cue = due_review()
+            if num is not None:
+                verdict = assess_recall(cue, user_msgs[0].get("content", ""))
+                if verdict in ("PASS", "FAIL"):
+                    grade_review(num, "pass" if verdict == "PASS" else "fail")
+                    graded = verdict
+        reply, err = call_llm(build_prompt(messages))
+        out = {"reply": reply} if not err else {"error": err}
+        if graded: out["graded"] = graded
+        return self._send(200, json.dumps(out))
 
 httpd = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), H)
 sys.stderr.write("cogito-teacher serving on http://127.0.0.1:%d  (Ctrl-C to stop)\n" % PORT)

@@ -201,7 +201,9 @@ The tools are fine alone; failures live in the gaps between them.
   files. Prove the adaptive loop in plain text on neuroscience. (Golden-structure 1–4.)
 - **Phase 2 — The bridge.** **(DONE 2026-06-15 — `scripts/cogito-serve.sh` + `teacher/`.)**
   Small local HTTP server exposes the brain; a plain browser
-  page runs the same loop (still 2D). Keys server-side, CORS set.
+  page runs the same loop (still 2D). Keys server-side, CORS set. The loop now CLOSES —
+  the server auto-grades the opening review back through `cogito-review.sh` (write-back),
+  verified live 2026-06-15.
 - **Phase 3 — Voice.** **(DONE 2026-06-15 — browser Web Speech TTS+STT in `teacher/`, text
   fallback; verified served + JS-valid, audio needs the user's browser. HeadTTS/Kokoro
   visemes deferred to Phase 4, where lip-sync needs them.)** Add HeadTTS/Kokoro (TTS) +
