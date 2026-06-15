@@ -202,8 +202,10 @@ The tools are fine alone; failures live in the gaps between them.
 - **Phase 2 — The bridge.** **(DONE 2026-06-15 — `scripts/cogito-serve.sh` + `teacher/`.)**
   Small local HTTP server exposes the brain; a plain browser
   page runs the same loop (still 2D). Keys server-side, CORS set.
-- **Phase 3 — Voice.** Add HeadTTS/Kokoro (TTS) + browser STT + Silero VAD. The teacher
-  talks and listens, still 2D. Latency hidden behind a "thinking" state.
+- **Phase 3 — Voice.** **(DONE 2026-06-15 — browser Web Speech TTS+STT in `teacher/`, text
+  fallback; verified served + JS-valid, audio needs the user's browser. HeadTTS/Kokoro
+  visemes deferred to Phase 4, where lip-sync needs them.)** Add HeadTTS/Kokoro (TTS) +
+  browser STT + Silero VAD. The teacher talks and listens, still 2D.
 - **Phase 4 — The body, flat screen.** Three.js scene + VRoid avatar + TalkingHead.js
   lip-sync wired to the voice. The avatar teaches on a normal monitor. *Structure proven,
   skin added — no headset yet.*

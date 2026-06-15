@@ -6,14 +6,17 @@
 <title>Cogito Teacher</title>
 <style>
   :root{ --bg:#0a0c10; --soft:#11151c; --line:#1f2630; --fg:#e7edf5; --muted:#94a3b8;
-         --accent:#7dd3fc; --you:#0b3a52; --teach:#141a22; --maxw:760px; }
+         --accent:#7dd3fc; --you:#0b3a52; --teach:#141a22; --rec:#b91c1c; --maxw:760px; }
   *{box-sizing:border-box} html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--fg);
        font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   .wrap{max-width:var(--maxw);margin:0 auto;height:100%;display:flex;flex-direction:column;padding:0 16px}
-  header{padding:20px 4px 12px;border-bottom:1px solid var(--line)}
+  header{padding:20px 4px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
   header h1{margin:0;font-size:18px;letter-spacing:-.01em}
   header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  .toggle{background:var(--soft);border:1px solid var(--line);color:var(--muted);border-radius:8px;
+          padding:7px 11px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .toggle.on{color:var(--accent);border-color:#1d5b7a}
   #log{flex:1;overflow-y:auto;padding:18px 2px;display:flex;flex-direction:column;gap:12px}
   .msg{max-width:88%;padding:11px 14px;border-radius:13px;white-space:pre-wrap;border:1px solid var(--line)}
   .you{align-self:flex-end;background:var(--you);border-color:#1d5b7a}
@@ -24,27 +27,66 @@
   #in{flex:1;background:var(--soft);border:1px solid var(--line);color:var(--fg);
       border-radius:10px;padding:11px 13px;font:inherit;resize:none}
   button{background:linear-gradient(180deg,#0b3a52,#082635);border:1px solid #1d5b7a;color:var(--fg);
-         padding:0 18px;border-radius:10px;font-weight:600;cursor:pointer}
+         padding:0 16px;border-radius:10px;font-weight:600;cursor:pointer}
   button:disabled{opacity:.5;cursor:default}
+  #mic{background:var(--soft);border-color:var(--line);font-size:18px;padding:0 13px}
+  #mic.rec{background:var(--rec);border-color:#ef4444}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>Cogito Teacher</h1>
-      <p>Plain-text tutor. Opens with your due review, then teaches one step at a time.</p>
+      <div>
+        <h1>Cogito Teacher</h1>
+        <p>Plain-text tutor with optional voice. Opens with your due review, teaches one step at a time.</p>
+      </div>
+      <button id="spk" class="toggle on" type="button" title="Toggle the teacher's voice">🔊 Voice on</button>
     </header>
     <div id="log"></div>
     <form id="f">
+      <button id="mic" type="button" title="Speak your answer">🎙️</button>
       <textarea id="in" rows="1" placeholder="Type your answer…" autocomplete="off"></textarea>
       <button id="send" type="submit">Send</button>
     </form>
   </div>
 <script>
 const log = document.getElementById('log'), input = document.getElementById('in'),
-      form = document.getElementById('f'), send = document.getElementById('send');
+      form = document.getElementById('f'), send = document.getElementById('send'),
+      mic = document.getElementById('mic'), spk = document.getElementById('spk');
 let messages = [];
 
+// ---- voice OUT (text-to-speech): free, browser-built-in, degrades silently ----
+const canSpeak = 'speechSynthesis' in window;
+let voiceOn = canSpeak;
+if(!canSpeak){ spk.style.display = 'none'; }
+spk.addEventListener('click', () => {
+  voiceOn = !voiceOn;
+  spk.classList.toggle('on', voiceOn);
+  spk.textContent = voiceOn ? '🔊 Voice on' : '🔇 Voice off';
+  if(!voiceOn) speechSynthesis.cancel();
+});
+function speak(text){
+  if(!voiceOn || !canSpeak) return;
+  try{ speechSynthesis.cancel();
+       const u = new SpeechSynthesisUtterance(text);
+       u.rate = 1.0; u.pitch = 1.0; speechSynthesis.speak(u);
+  }catch(_){}
+}
+
+// ---- voice IN (speech-to-text): free, browser-built-in; hide if unsupported ----
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+if(SR){
+  rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.onresult = e => { input.value = e.results[0][0].transcript; };
+  rec.onend = () => mic.classList.remove('rec');
+  rec.onerror = () => mic.classList.remove('rec');
+  mic.addEventListener('click', () => {
+    try{ rec.start(); mic.classList.add('rec'); }catch(_){ mic.classList.remove('rec'); }
+  });
+} else { mic.style.display = 'none'; }
+
+// ---- the chat loop (unchanged backend contract) ----
 function bubble(role, text){
   const d = document.createElement('div');
   d.className = 'msg ' + (role === 'user' ? 'you' : 'teach');
@@ -63,6 +105,7 @@ async function turn(){
     const reply = data.reply || ('[' + (data.error || 'no reply') + ']');
     thinking.textContent = reply;
     messages.push({role:'assistant', content: reply});
+    if(data.reply) speak(reply);
   }catch(e){ thinking.textContent = '[network error: ' + e.message + ']'; }
   send.disabled = false; input.focus();
 }
