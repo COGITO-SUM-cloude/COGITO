@@ -8,13 +8,13 @@ Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so 
 
 ## Foundation already in place (2026-06-15)
 - ONE canonical brain on `main`; the SessionStart hooks load from `origin/main`, not the session branch (cross-session consistency — fixed + verified).
-- Brain AUTO-SAVES at turn end (Stop hook `scripts/cogito-converge.sh`): brain files only, commits + pushes to the BRANCH so lessons survive. It does NOT auto-push to main (main needs an explicit "update main"). Opt-in hands-off main: `COGITO_CONVERGE_TO_MAIN=1` (FF-only). Kill switch: `COGITO_AUTO_CONVERGE=0`.
+- Brain AUTO-SAVES at turn end (Stop hook `scripts/cogito-converge.sh`): brain files only, commits + pushes to the branch, AND fast-forwards `main` — the user turned auto-push ON (2026-06-15); FF-only, never clobber. Branch-only: `COGITO_CONVERGE_TO_MAIN=0`; fully off: `COGITO_AUTO_CONVERGE=0`.
 
 ## Council-ranked roadmap — go down the list
 1. DONE — supersession: a corrected lesson consolidates/archives the old one so only the current rule loads (fixed a verified contradiction; conservation gate passed).
 2. DONE — Stop-hook auto-save (above).
-3. NEXT — `UserPromptSubmit` hook: auto-pull only the 1-3 lessons matching the prompt's keywords (biggest context-tax win). [edits a startup file -> needs an explicit yes]
-4. Verify-before-store gate: a lesson always-loads only after it recurs/confirms.
+3. DONE — `UserPromptSubmit` hook (`scripts/cogito-recall.sh`): auto-pulls the 1-3 lessons matching the prompt's keywords; verified live. Kill switch: `COGITO_RECALL=0`.
+4. NEXT — Verify-before-store gate (Voyager rule): prove a new skill/lesson before it's trusted/always-loaded. Scope TBD: skills via `cogito-skill-check.sh`; lessons via the probation buffer.
 5. Sharpen + rotate the council JUDGE (use a non-Claude model for it once a key exists).
 6. Wikilink + grep-backlink format — the prerequisite-graph the VR teacher walks.
 7. One FREE OpenRouter non-Claude voice in the council (needs a key; still $0).
@@ -26,7 +26,7 @@ The VR teacher's hard part is the STUDENT MODEL — tracking what a learner know
 
 ## Guardrails (always on)
 - One brain = `main`. Sync only `main` + the active branch. NEVER push to old session branches.
-- `main` is protected: any update to it needs the user's explicit yes to that exact action. The auto-save hook respects this (branch only by default).
+- `main` updates: the auto-save hook now FF-pushes to `main` (user opted in 2026-06-15; FF-only, never clobber). A human-initiated force/non-FF update to `main` still needs an explicit yes.
 - Faceless: commit as `Cogito <cogito@users.noreply.github.com>`; nothing personal in artifacts.
 - Verify by running/re-reading — never "probably / passed / captured."
 - Talk adult-to-adult: plain, short, no jargon, no "baby steps" framing (the #critical comms lesson).

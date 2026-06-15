@@ -6,18 +6,18 @@
 # forked ledgers/branches, stale resume). This captures them the moment a turn
 # ends so they survive — committed and pushed to the CURRENT BRANCH.
 #
-# It does NOT auto-push to main by default. The user's standing rule is that
-# updates to the protected canonical branch (main) need an explicit per-action
-# "yes" — so convergence to main stays a deliberate step ("update main"). A user
-# who wants full hands-off convergence can opt in with COGITO_CONVERGE_TO_MAIN=1,
-# and even then only a clean fast-forward is ever performed (never force/clobber).
+# Auto-pushes the brain to main (FF-only) at session end — the user EXPLICITLY
+# enabled this on 2026-06-15 ("turn auto push on"). It performs a clean
+# fast-forward only: never force, never clobber; a diverged/raced main is left
+# untouched and reported. Revert to branch-only with COGITO_CONVERGE_TO_MAIN=0,
+# or turn the hook off entirely with COGITO_AUTO_CONVERGE=0.
 #
 # Deliberately narrow and safe:
 #   - BRAIN FILES ONLY (never sweeps code or other working changes)
 #   - commits + pushes to the current branch (durable); main is opt-in + FF-only
 #   - faceless identity; non-fatal (a Stop hook must never break the session)
 #   - kill switch:  export COGITO_AUTO_CONVERGE=0
-#   - main opt-in:  export COGITO_CONVERGE_TO_MAIN=1   (FF-only; off by default)
+#   - branch-only:  export COGITO_CONVERGE_TO_MAIN=0   (main auto-push is ON by default; FF-only)
 #   - safe testing: export COGITO_CONVERGE_DRYRUN=1    (report only; no commit/push)
 set -uo pipefail   # NOT -e: never hard-fail the session
 
@@ -30,7 +30,7 @@ git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
 MAIN_BRANCH="${COGITO_MAIN_BRANCH:-main}"
 DRYRUN="${COGITO_CONVERGE_DRYRUN:-0}"
-TO_MAIN="${COGITO_CONVERGE_TO_MAIN:-0}"   # off by default — main needs an explicit yes
+TO_MAIN="${COGITO_CONVERGE_TO_MAIN:-1}"   # ON: user opted in 2026-06-15 ("turn auto push on"); FF-only. =0 -> branch-only.
 BRAIN_PATHS=(
   "skills/cogito-protocol/LESSONS.md"
   "skills/cogito-protocol/LESSONS-ARCHIVE.md"
