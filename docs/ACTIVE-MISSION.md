@@ -18,9 +18,10 @@ Everything stays $0 + file-native where possible; a small paid model is the one 
 - When in **another repo's session**: "wire this to the brain" → drop in `cogito-sync.sh` + hook + capture, then watch a real lesson land in the brain.
 - **Teacher polish**: deploy the neural voice; decide the paid-model question; grow neuroscience lessons (content = the real "training").
 - **Build the dashboard** (its own repo, wired to the brain).
+- **Open (this session):** the council now auto-uses a non-Claude voice (on `main`); the converge hook is hardened to push brain-only to `main`. The hook fix is on branch `claude/brave-carson-8sa2lm`, **not yet on `main`** — pending the user's explicit "push to main" (+ optional: silence the git nag, fix the hook's by-hand `../..` path fallback).
 
 ## Guardrails (always on)
-- One brain = `main`. The converge Stop hook FF-pushes brain files to `main` (user opted in). **A direct/manual `main` push needs an EXPLICIT per-time yes** (classifier enforces this; one "deploy it" is not standing permission).
+- One brain = `main`. The converge Stop hook pushes **brain files ONLY** to `main` (synthetic commit on `origin/main`; hardened 06-15 so a withheld branch commit can't ride along). **A direct/manual `main` push needs an EXPLICIT per-time yes — a generic "go"/"continue" is NOT main consent** (classifier enforces this; one "deploy it" is not standing permission).
 - Faceless: now set as LOCAL git config (`Cogito <cogito@users.noreply.github.com>`) so merges don't slip to "Claude". Nothing personal in artifacts.
 - The Vercel deploy stays **private** until the user says publish. Keys = least privilege, read in-process never argv.
 - Verify by running/re-reading — never "probably / passed". Talk plain + short (the #critical comms lesson).
