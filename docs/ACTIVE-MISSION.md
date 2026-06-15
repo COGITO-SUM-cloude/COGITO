@@ -1,29 +1,35 @@
 # ACTIVE MISSION — resume pointer
-_Short on purpose: this is read into every session, so it costs tokens each turn. Plain language only — the user is non-technical._
+_Short on purpose: read into every session, costs tokens each turn. Talk adult-to-adult: plain, short, no jargon, no "baby steps" (the user is non-technical but NOT a child)._
 
 When the user says "Cogito": greet in one line, confirm, continue. Don't re-interview.
 
-## Mission — Cogito tooling first, then resume the AI teacher
-Make the memory trustworthy and consistent across sessions BEFORE building more on top of it.
+## Mission — make the brain as POWERFUL as possible, then the VR teacher is easy
+Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so a future VR/3D AI teacher is easy to build. Execute the council's ROI-ranked list, best payoff first. Every pick is $0 + file-native.
 
-## The fix (2026-06-15): one brain, not five
-Symptom: each session read its memory from its OWN branch, so sessions drifted apart and a new one re-did finished work ("the live consistency feature is bugging").
-Fix:
-1. `main` is the ONE canonical brain. All stranded session work was reconciled into it — the completed 10-item roadmap, the council, the AI-teacher start, and the full lessons ledger (now 56).
-2. The SessionStart hooks load the brain from `origin/main` (a fixed point), NOT the local branch, with the local copy as an offline fallback. Sessions can't drift apart again.
-3. Write-back: at checkpoint, converge this session's new lessons + this file back to `main`. `main` is protected — ASK the user for a clear yes before updating it; never auto-push.
+## Foundation already in place (2026-06-15)
+- ONE canonical brain on `main`; the SessionStart hooks load from `origin/main`, not the session branch (cross-session consistency — fixed + verified).
+- Brain AUTO-SAVES at turn end (Stop hook `scripts/cogito-converge.sh`): brain files only, commits + pushes to the BRANCH so lessons survive. It does NOT auto-push to main (main needs an explicit "update main"). Opt-in hands-off main: `COGITO_CONVERGE_TO_MAIN=1` (FF-only). Kill switch: `COGITO_AUTO_CONVERGE=0`.
 
-## Next, in order
-1. Trust-but-VERIFY confident-wright's "roadmap COMPLETE" claim — actually RUN each tool (#3 index-load, #5 decay, #6 skill-gate, #7 spaced-rep, #8 guard, #9 plugin, #10 reviewer) and confirm it works before trusting "done".
-2. Council + Hermes direction — user asked for an options brief first; don't build until chosen.
-3. Resume the AI teacher (`docs/checkpoints/2026-06-15-ai-teacher-pivot.md`) once the base is trusted.
+## Council-ranked roadmap — go down the list
+1. DONE — supersession: a corrected lesson consolidates/archives the old one so only the current rule loads (fixed a verified contradiction; conservation gate passed).
+2. DONE — Stop-hook auto-save (above).
+3. NEXT — `UserPromptSubmit` hook: auto-pull only the 1-3 lessons matching the prompt's keywords (biggest context-tax win). [edits a startup file -> needs an explicit yes]
+4. Verify-before-store gate: a lesson always-loads only after it recurs/confirms.
+5. Sharpen + rotate the council JUDGE (use a non-Claude model for it once a key exists).
+6. Wikilink + grep-backlink format — the prerequisite-graph the VR teacher walks.
+7. One FREE OpenRouter non-Claude voice in the council (needs a key; still $0).
+8. Obsidian "Bases"-style saved-query views.
+DEFER (panel agreed): paid Fusion, local Hermes (big GPU), MCP "expose the brain" server (for the VR client later), local embedding index, the Obsidian app.
+
+## For later (the real long-pole)
+The VR teacher's hard part is the STUDENT MODEL — tracking what a learner knows over time (same temporal-validity idea as #1, but for the learner). Convene a dedicated council on it when we shift from "harden the brain" to "build the teacher".
 
 ## Guardrails (always on)
-- One brain = `main`. Sync only `main` + the active branch. NEVER push to old session branches (a stale push resurrects deleted ones).
-- `main` is protected: update it only with the user's explicit yes to that exact action.
+- One brain = `main`. Sync only `main` + the active branch. NEVER push to old session branches.
+- `main` is protected: any update to it needs the user's explicit yes to that exact action. The auto-save hook respects this (branch only by default).
 - Faceless: commit as `Cogito <cogito@users.noreply.github.com>`; nothing personal in artifacts.
-- Verify by running/re-reading — never "probably / build passed / captured."
-- Plain language, short replies — the user is non-technical.
+- Verify by running/re-reading — never "probably / passed / captured."
+- Talk adult-to-adult: plain, short, no jargon, no "baby steps" framing (the #critical comms lesson).
 
 ## Full context
-Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Teacher: `docs/checkpoints/2026-06-15-ai-teacher-pivot.md` · This fix: `docs/checkpoints/2026-06-15-consistency-fix.md`
+This session's council + judge produced the roadmap above. Teacher: `docs/checkpoints/2026-06-15-ai-teacher-pivot.md`. Fixes: `docs/checkpoints/2026-06-15-consistency-fix.md`.
