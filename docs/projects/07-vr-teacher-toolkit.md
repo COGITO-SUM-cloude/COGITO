@@ -206,9 +206,12 @@ The tools are fine alone; failures live in the gaps between them.
   fallback; verified served + JS-valid, audio needs the user's browser. HeadTTS/Kokoro
   visemes deferred to Phase 4, where lip-sync needs them.)** Add HeadTTS/Kokoro (TTS) +
   browser STT + Silero VAD. The teacher talks and listens, still 2D.
-- **Phase 4 — The body, flat screen.** Three.js scene + VRoid avatar + TalkingHead.js
-  lip-sync wired to the voice. The avatar teaches on a normal monitor. *Structure proven,
-  skin added — no headset yet.*
+- **Phase 4 — The body, flat screen.** **(DONE 2026-06-15 v0 — `teacher/avatar.html`: a
+  procedural Three.js head whose mouth is driven by the speaking state, same brain+voice
+  backend; rendered + screenshot-verified headless. Real VRoid avatar + TalkingHead.js
+  viseme lip-sync drop into this same slot next.)** Three.js scene + VRoid avatar +
+  TalkingHead.js lip-sync wired to the voice. The avatar teaches on a normal monitor.
+  *Structure proven, skin added — no headset yet.*
 - **Phase 5 — VR.** Flip on the WebXR session; perf pass (draw calls, KTX2, one light);
   test on a Quest.
 - **Phase 6 — The brother.** Swap to the child-scaffolded profile + his placement results;
