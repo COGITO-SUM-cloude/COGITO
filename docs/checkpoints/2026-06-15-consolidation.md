@@ -31,7 +31,7 @@ This session: roadmap item **#4 — the consolidation pass** (mechanism + first 
 - `skills/cogito-protocol/SKILL.md` §4b — now points at the `cogito-consolidate` skill +
   the archive file + the probation/conservation guards.
 - `docs/ACTIVE-MISSION.md` — #4 marked DONE; NEXT = #5 decay/archive.
-- All on branch `claude/lucid-hopper-ahiy8z`.
+- On `main` (the #4 commit was fast-forwarded from the session branch onto main mid-session, at the user's request; the session branch is now redundant).
 
 ## Verification (evidence, not assertion — §5b)
 - `grep -c '^- '` → 43 live + 2 archived right after the merge; conservation `43 = 44 − 2 + 1` held.
