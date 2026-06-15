@@ -13,9 +13,11 @@ Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap
 - **DONE (Tier 2 cont.):** #6 CoALA taxonomy + skill index + skill-creation gate — `skills/INDEX.md` (memory-type map: episodic=checkpoints, semantic=lessons, procedural=skills, working=context+ACTIVE-MISSION; + a description-keyed skill catalog) + `scripts/cogito-skill-check.sh` (runnable gate: frontmatter + listed-in-INDEX checks, states the Voyager/§5 "verified-in-a-real-session" rule) + protocol §4c. Audit passes all 4 skills; the bogus-name and unindexed-skill fail-paths verified.
 - **DONE (#7):** spaced-repetition for the learning log — Leitner ladder (`box:N due:DATE`, 1/3/7/16/35/90d) on each log lesson; `scripts/cogito-review.sh` (`due`/`list`/`grade`); the SessionStart hook now surfaces the most-overdue recap cue (guarded, non-fatal — the lesson-load path is untouched). Verified live incl. the hook. **→ Tier 2 COMPLETE.**
 - **DONE (#10):** fresh-context reviewer subagent (`.claude/agents/cogito-reviewer.md`) + protocol §5c grounded-signal rule + INDEX agents section. Proven live via a `general-purpose` proxy that independently re-verified this session's work against git + the scripts — and correctly **FAILED** an over-claim until the push landed (decorrelation working as designed). Invokable by `subagent_type` after the next session reload.
-- **REMAINING:**
-  - *Safe (Tier 3, low risk):* #9 package Cogito as a Claude Code plugin (one-command install across repos; bundles skills + agents + hooks).
-  - *RISKY — confirm + verify hard before starting:* #3 index-then-load (touches the SessionStart **load path**); #8 guard/auto-capture hooks (PreToolUse/Stop — tool boundary). A memory system that fails to load its lessons is the worst outcome — keep full-load as the safety net and prove any change before trusting it.
+- **DONE (#9):** packaged as a Claude Code plugin — `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` + `hooks/hooks.json`, reusing the existing skills/agents/scripts via explicit manifest paths (nothing moved; repo stays both a working repo and a plugin). `claude plugin validate .` passes clean; `marketplace add ./` registers it. Install: `/plugin marketplace add COGITO-SUM-cloude/COGITO` → `/plugin install cogito@cogito`. (Full install + restart load confirmable next session.)
+- **REMAINING — only the risky pair (HOLD for an explicit go-ahead + verify hard):**
+  - #3 index-then-load — touches the SessionStart **load path**; keep full-load as the safety net.
+  - #8 guard/auto-capture hooks (PreToolUse/Stop) — the tool boundary.
+  A memory system that fails to load its lessons is the worst outcome; prove any change before trusting it. Best done deliberately in a fresh session, not at the tail of a long one.
 
 ## Guardrails (hard-won this session)
 - Sync ONLY `main` + the active working branch. NEVER push to old session branches — a stale push resurrects deleted ones.
