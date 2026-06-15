@@ -33,7 +33,7 @@ review. (`box:0` = seeded, not yet in rotation.)
   looking at it or walking it?"
 - **Status:** ✓ Derived by the user (2026-06-13) — chose "B, the struggle one" and
   reasoned it out. Earned, not just told.
-- **Review:** box:1 due:2026-06-14
+- **Review:** box:2 due:2026-06-18
 
 ---
 
@@ -71,3 +71,27 @@ review. (`box:0` = seeded, not yet in rotation.)
   because the failure made it "review its knowledge and [find] there was a rule for it."
   Reached the availability/accessibility idea on their own.
 - **Review:** box:1 due:2026-06-15
+
+---
+
+## Lesson 4 — Caffeine doesn't add energy, it hides the tiredness
+- **Plain version:** Tiredness is a chemical (**adenosine**) piling up the longer you're
+  awake — the more it stacks, the foggier you feel; that pile *is* the signal. Caffeine
+  doesn't add energy or remove the chemical — it just plugs the "parking spots" so the
+  signal can't land. The adenosine keeps building underneath; when the caffeine wears off
+  it all docks at once — the **crash**. Only **sleep** actually clears it.
+- **Picture:** adenosine = sludge filling parking spots, each filled spot dims the room.
+  Caffeine = a fake car in the spots so the sludge can't dock — but it keeps piling in the
+  corner; caffeine leaves, it floods every spot at once and the room goes dark fast. Sleep
+  = a wave that clears all the spots.
+- **Real name:** **adenosine** (and its receptors — the "parking spots"); caffeine is a
+  *blocker* of those receptors, not a booster.
+- **Use it:** judging "brain boosters" — caffeine borrows alertness from later and repays
+  it as a crash; the strongest lever (sleep) is free. That's the proven-vs-hyped lens.
+- **Recap cue (ask next time):** "Caffeine and the parking spots — is it adding energy or
+  just blocking the signal, and what's the only thing that clears the buildup?"
+- **Status:** ✓ Derived by the user (2026-06-15) — reasoned out, unprompted, that caffeine
+  blocks the tiredness *signal* and that the backed-up "brain sludge" floods in as the
+  crash once it wears off (the bonus insight). Supplied to complete it: the name
+  (adenosine) and that **sleep** is what clears it — confirm those at first review.
+- **Review:** box:1 due:2026-06-16

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cogito Teacher — 3D</title>
+<style>
+  :root{ --bg:#0a0c10; --soft:#11151c; --line:#1f2630; --fg:#e7edf5; --muted:#94a3b8;
+         --accent:#7dd3fc; --you:#0b3a52; --rec:#b91c1c; }
+  *{box-sizing:border-box} html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--fg);overflow:hidden;
+       font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  #scene{position:fixed;inset:0}
+  #hud{position:fixed;left:0;right:0;top:0;padding:14px 18px;display:flex;justify-content:space-between;
+       align-items:center;pointer-events:none}
+  #hud h1{margin:0;font-size:15px;letter-spacing:.02em;color:var(--fg);opacity:.85}
+  .toggle{pointer-events:auto;background:var(--soft);border:1px solid var(--line);color:var(--muted);
+          border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+  .toggle.on{color:var(--accent);border-color:#1d5b7a}
+  #panel{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;width:min(680px,94vw);
+         display:flex;flex-direction:column;gap:8px}
+  #say{max-height:30vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+  .b{max-width:90%;padding:8px 12px;border-radius:11px;white-space:pre-wrap;font-size:14px;border:1px solid var(--line)}
+  .b.you{align-self:flex-end;background:var(--you);border-color:#1d5b7a}
+  .b.t{align-self:flex-start;background:rgba(20,26,34,.85);backdrop-filter:blur(4px)}
+  .b.dim{color:var(--muted);font-style:italic}
+  form{display:flex;gap:8px}
+  #in{flex:1;background:rgba(17,21,28,.9);border:1px solid var(--line);color:var(--fg);
+      border-radius:10px;padding:10px 12px;font:inherit}
+  button{background:linear-gradient(180deg,#0b3a52,#082635);border:1px solid #1d5b7a;color:var(--fg);
+         padding:0 15px;border-radius:10px;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.5}
+  #mic{background:rgba(17,21,28,.9);border-color:var(--line);font-size:17px;padding:0 12px}
+  #mic.rec{background:var(--rec);border-color:#ef4444}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="hud">
+    <h1>Cogito Teacher</h1>
+    <button id="spk" class="toggle on" type="button">🔊 Voice on</button>
+  </div>
+  <div id="panel">
+    <div id="say"></div>
+    <form id="f">
+      <button id="mic" type="button" title="Speak your answer">🎙️</button>
+      <input id="in" type="text" placeholder="Type your answer…" autocomplete="off" />
+      <button id="send" type="submit">Send</button>
+    </form>
+  </div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// ---------- shared speaking flag (drives the mouth) ----------
+const state = { speaking: false, mouth: 0 };
+
+// ---------- 3D scene: a stylized teacher head (procedural; no asset) ----------
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0c10);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, -0.25, 4.8);
+
+scene.add(new THREE.AmbientLight(0x9fb4cc, 0.7));
+const key = new THREE.DirectionalLight(0xbfe3ff, 1.1); key.position.set(2, 3, 4); scene.add(key);
+const rim = new THREE.DirectionalLight(0xa78bfa, 0.5); rim.position.set(-3, 1, -2); scene.add(rim);
+
+const person = new THREE.Group(); scene.add(person);
+const skin = new THREE.MeshStandardMaterial({ color: 0x8fb3c9, roughness: 0.6, metalness: 0.05 });
+
+const head = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 48), skin);
+head.scale.set(0.92, 1.02, 0.92); person.add(head);
+
+const eyeWhite = new THREE.MeshStandardMaterial({ color: 0xeaf2fb, roughness: 0.3 });
+const pupilMat = new THREE.MeshStandardMaterial({ color: 0x0b1220, roughness: 0.4 });
+function eye(x){
+  const g = new THREE.Group();
+  const w = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 24), eyeWhite); g.add(w);
+  const p = new THREE.Mesh(new THREE.SphereGeometry(0.085, 20, 20), pupilMat); p.position.z = 0.12; g.add(p);
+  g.position.set(x, 0.16, 0.83); return g;
+}
+const eyeL = eye(-0.33), eyeR = eye(0.33); person.add(eyeL, eyeR);
+
+const browMat = new THREE.MeshStandardMaterial({ color: 0x44617a, roughness: 0.7 });
+function brow(x){ const b = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.05, 0.08), browMat);
+  b.position.set(x, 0.4, 0.86); return b; }
+person.add(brow(-0.33), brow(0.33));
+
+const mouthMat = new THREE.MeshStandardMaterial({ color: 0x3a1f28, roughness: 0.5 });
+const mouth = new THREE.Mesh(new THREE.SphereGeometry(0.22, 28, 20), mouthMat);
+mouth.scale.set(1, 0.12, 0.5); mouth.position.set(0, -0.34, 0.84); person.add(mouth);
+
+// subtle shoulders so it reads as a "teacher", not a floating head
+const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.7, 0.5, 8, 24),
+  new THREE.MeshStandardMaterial({ color: 0x1b2733, roughness: 0.8 }));
+torso.position.set(0, -1.95, 0); torso.scale.set(1.25, 1, 0.8); person.add(torso);
+
+// ---- optional REAL avatar: drop a glTF at teacher/avatar.glb, or pass ?avatar=<url>.
+// On success the built-in head hides and a mouth/jaw morph (if the model has one) is
+// driven by the speaking state. On ANY failure we keep the built-in head — never blank.
+let mouthMorph = null, mixer = null;
+const _avatarUrl = new URLSearchParams(location.search).get('avatar') || 'avatar.glb';
+new GLTFLoader().load(_avatarUrl, (gltf) => {
+  person.visible = false;
+  scene.add(gltf.scene);
+  // Fixed humanoid framing (no Box3 on a skinned model — bounds aren't valid on load).
+  // Tuned for a ~1.8m character standing at the origin (RobotExpressive / RPM / VRoid).
+  camera.position.set(0, 1.8, 9.5); camera.lookAt(0, 1.8, 0);
+  // play the model's idle (or first) animation clip for liveliness, if it has one.
+  if(gltf.animations && gltf.animations.length){
+    mixer = new THREE.AnimationMixer(gltf.scene);
+    const clip = gltf.animations.find(a => /idle/i.test(a.name)) || gltf.animations[0];
+    mixer.clipAction(clip).play();
+  }
+  gltf.scene.traverse((o) => {
+    if(o.isMesh && o.morphTargetDictionary && !mouthMorph){
+      for(const k of Object.keys(o.morphTargetDictionary)){
+        if(/mouthopen|jaw.?open|viseme.?aa|^aa$/i.test(k)){
+          mouthMorph = { mesh: o, idx: o.morphTargetDictionary[k] }; break;
+        }
+      }
+    }
+  });
+}, undefined, (err) => { console.warn('avatar load failed — using built-in head:', (err && err.message) || err); });
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+let blink = 0, nextBlink = 1.5, t = 0;
+const clock = new THREE.Clock();
+function animate(){
+  const dt = clock.getDelta(); t += dt;
+  if(mixer) mixer.update(dt);
+  // idle: gentle bob + sway
+  person.position.y = Math.sin(t * 0.9) * 0.03;
+  person.rotation.y = Math.sin(t * 0.4) * 0.08;
+  // blink
+  nextBlink -= dt;
+  if(nextBlink <= 0){ blink = 1; nextBlink = 2 + Math.random() * 3; }
+  blink = Math.max(0, blink - dt * 8);
+  const open = 1 - blink * 0.9;
+  eyeL.scale.y = open; eyeR.scale.y = open;
+  // mouth: oscillate while speaking, else rest closed
+  const target = state.speaking ? (0.35 + Math.abs(Math.sin(t * 16)) * 0.9) : 0.12;
+  state.mouth += (target - state.mouth) * Math.min(1, dt * 18);
+  mouth.scale.y = state.mouth;
+  if(mouthMorph && mouthMorph.mesh.morphTargetInfluences){ mouthMorph.mesh.morphTargetInfluences[mouthMorph.idx] = Math.min(1, state.mouth); }
+  renderer.render(scene, camera);
+}
+// flat-screen now; VR-ready via WebXR. setAnimationLoop drives both (rAF on a monitor,
+// the headset's frame loop in an immersive session).
+renderer.xr.enabled = true;
+renderer.setAnimationLoop(animate);
+// "Enter VR" appears only where immersive VR is actually supported (e.g. a Quest browser).
+// Untested without a headset — the flat-screen path above is unchanged.
+if(navigator.xr && navigator.xr.isSessionSupported){
+  navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+    if(!ok) return;
+    const vb = document.createElement('button');
+    vb.type = 'button'; vb.className = 'toggle'; vb.textContent = '🥽 Enter VR'; vb.style.marginLeft = '8px';
+    vb.onclick = async () => {
+      try{
+        const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] });
+        renderer.xr.setReferenceSpaceType('local-floor');
+        await renderer.xr.setSession(s);
+      }catch(e){ console.warn('VR session failed:', e); }
+    };
+    document.getElementById('hud').appendChild(vb);
+  }).catch(() => {});
+}
+
+// ---------- voice (browser Web Speech; same as the 2D page) ----------
+const canSpeak = 'speechSynthesis' in window;
+let voiceOn = canSpeak; const spk = document.getElementById('spk');
+if(!canSpeak) spk.style.display = 'none';
+spk.addEventListener('click', () => { voiceOn = !voiceOn; spk.classList.toggle('on', voiceOn);
+  spk.textContent = voiceOn ? '🔊 Voice on' : '🔇 Voice off'; if(!voiceOn){ speechSynthesis.cancel(); state.speaking = false; } });
+function speak(text){
+  if(!voiceOn || !canSpeak) return;
+  try{ speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.rate = 1.0;
+    u.onstart = () => state.speaking = true;
+    u.onend = () => state.speaking = false;
+    speechSynthesis.speak(u);
+  }catch(_){}
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const mic = document.getElementById('mic'), input = document.getElementById('in');
+if(SR){ const rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false;
+  rec.onresult = e => input.value = e.results[0][0].transcript;
+  rec.onend = () => mic.classList.remove('rec'); rec.onerror = () => mic.classList.remove('rec');
+  mic.addEventListener('click', () => { try{ rec.start(); mic.classList.add('rec'); }catch(_){} });
+} else { mic.style.display = 'none'; }
+
+// ---------- chat (same /api/chat backend as the 2D page) ----------
+const say = document.getElementById('say'), form = document.getElementById('f'), send = document.getElementById('send');
+let messages = [];
+function bubble(role, text){
+  const d = document.createElement('div'); d.className = 'b ' + (role === 'user' ? 'you' : 't');
+  d.textContent = text; say.appendChild(d); say.scrollTop = say.scrollHeight; return d;
+}
+async function turn(){
+  send.disabled = true; const el = bubble('teacher', '…'); el.classList.add('dim');
+  try{
+    const r = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ messages }) });
+    const data = await r.json(); el.classList.remove('dim');
+    const reply = data.reply || ('[' + (data.error || 'no reply') + ']');
+    el.textContent = reply; messages.push({ role:'assistant', content: reply });
+    if(data.reply) speak(reply);
+  }catch(e){ el.textContent = '[network error: ' + e.message + ']'; }
+  send.disabled = false; input.focus();
+}
+form.addEventListener('submit', e => { e.preventDefault();
+  const v = input.value.trim(); if(!v) return;
+  bubble('user', v); messages.push({ role:'user', content: v }); input.value = ''; turn(); });
+turn(); // open with the retrieval question
+</script>
+</body>
+</html>
