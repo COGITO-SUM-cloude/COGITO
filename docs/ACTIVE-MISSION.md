@@ -9,7 +9,8 @@ Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap
 
 ## Where we are (2026-06-15)
 - **DONE (Tier 1):** #1 runnable verification gate (SKILL §5b); #2 lesson tags + importance `[I:1-10]` convention.
-- **NEXT, in order:** #4 consolidation pass → #5 decay/archive → #6 CoALA taxonomy + skill-creation gate → #7 spaced-repetition for the learning log.
+- **DONE (#4) consolidation pass:** new `cogito-consolidate` skill (cluster→merge/supersede→archive w/ provenance; probation buffer; runnable conservation check) + `skills/cogito-protocol/LESSONS-ARCHIVE.md`; first real pass merged the 2 security-classifier captures → 1 `[I:9]` rule, verified end-to-end (ledger loads at 43, conservation held; gate caught + fixed a welded-line corruption).
+- **NEXT, in order:** #5 decay/archive → #6 CoALA taxonomy + skill-creation gate → #7 spaced-repetition for the learning log.
 - **HOLD / extra care (blast radius — confirm + verify hard):** #3 index-then-load (touches the SessionStart load path), #8 guard/auto-capture hooks (tool boundary). A memory system that fails to load its lessons is the worst outcome — keep full-load as a safety net and prove the change before trusting it.
 - **Tier 3 after:** #9 package as a plugin, #10 fresh-context reviewer subagent.
 
@@ -20,4 +21,4 @@ Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap
 - New lessons use the tagged format: `[#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE`.
 
 ## Full context
-Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-upgrade-roadmap.md`
+Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-consolidation.md`
