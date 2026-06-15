@@ -110,7 +110,6 @@ addEventListener('resize', resize); resize();
 let blink = 0, nextBlink = 1.5, t = 0;
 const clock = new THREE.Clock();
 function animate(){
-  requestAnimationFrame(animate);
   const dt = clock.getDelta(); t += dt;
   // idle: gentle bob + sway
   person.position.y = Math.sin(t * 0.9) * 0.03;
@@ -127,7 +126,27 @@ function animate(){
   mouth.scale.y = state.mouth;
   renderer.render(scene, camera);
 }
-animate();
+// flat-screen now; VR-ready via WebXR. setAnimationLoop drives both (rAF on a monitor,
+// the headset's frame loop in an immersive session).
+renderer.xr.enabled = true;
+renderer.setAnimationLoop(animate);
+// "Enter VR" appears only where immersive VR is actually supported (e.g. a Quest browser).
+// Untested without a headset — the flat-screen path above is unchanged.
+if(navigator.xr && navigator.xr.isSessionSupported){
+  navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+    if(!ok) return;
+    const vb = document.createElement('button');
+    vb.type = 'button'; vb.className = 'toggle'; vb.textContent = '🥽 Enter VR'; vb.style.marginLeft = '8px';
+    vb.onclick = async () => {
+      try{
+        const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] });
+        renderer.xr.setReferenceSpaceType('local-floor');
+        await renderer.xr.setSession(s);
+      }catch(e){ console.warn('VR session failed:', e); }
+    };
+    document.getElementById('hud').appendChild(vb);
+  }).catch(() => {});
+}
 
 // ---------- voice (browser Web Speech; same as the 2D page) ----------
 const canSpeak = 'speechSynthesis' in window;

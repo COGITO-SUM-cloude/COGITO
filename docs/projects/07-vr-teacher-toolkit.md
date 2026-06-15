@@ -212,8 +212,10 @@ The tools are fine alone; failures live in the gaps between them.
   viseme lip-sync drop into this same slot next.)** Three.js scene + VRoid avatar +
   TalkingHead.js lip-sync wired to the voice. The avatar teaches on a normal monitor.
   *Structure proven, skin added — no headset yet.*
-- **Phase 5 — VR.** Flip on the WebXR session; perf pass (draw calls, KTX2, one light);
-  test on a Quest.
+- **Phase 5 — VR.** **(CODE-READY 2026-06-15 — WebXR `immersive-vr` + an Enter-VR button
+  wired into `teacher/avatar.html` via `renderer.xr`; flat-screen render verified intact,
+  in-headset behavior UNVERIFIED — needs a Quest. Perf pass + KTX2 on real hardware.)**
+  Flip on the WebXR session; perf pass (draw calls, KTX2, one light); test on a Quest.
 - **Phase 6 — The brother.** Swap to the child-scaffolded profile + his placement results;
   switch STT to local whisper.cpp for privacy; turn on the engagement layer.
 
