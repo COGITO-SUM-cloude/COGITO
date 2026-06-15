@@ -14,8 +14,8 @@ Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so 
 1. DONE — supersession: a corrected lesson consolidates/archives the old one so only the current rule loads (fixed a verified contradiction; conservation gate passed).
 2. DONE — Stop-hook auto-save (above).
 3. DONE — `UserPromptSubmit` hook (`scripts/cogito-recall.sh`): auto-pulls the 1-3 lessons matching the prompt's keywords; verified live. Kill switch: `COGITO_RECALL=0`.
-4. NEXT — Verify-before-store gate (Voyager rule): prove a new skill/lesson before it's trusted/always-loaded. Scope TBD: skills via `cogito-skill-check.sh`; lessons via the probation buffer.
-5. Sharpen + rotate the council JUDGE (use a non-Claude model for it once a key exists).
+4. DONE — Verify-before-store gate: the skill-check gate (`cogito-skill-check.sh`) + the documented rule + the lesson-probation buffer already existed (prior merge); ran the gate, all 5 skills pass. Confirmed working, not rebuilt.
+5. NEXT — Sharpen + rotate the council JUDGE (use a non-Claude model for it once a key exists).
 6. Wikilink + grep-backlink format — the prerequisite-graph the VR teacher walks.
 7. One FREE OpenRouter non-Claude voice in the council (needs a key; still $0).
 8. Obsidian "Bases"-style saved-query views.
