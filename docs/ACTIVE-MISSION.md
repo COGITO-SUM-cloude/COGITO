@@ -18,7 +18,7 @@ Everything stays $0 + file-native where possible; a small paid model is the one 
 - When in **another repo's session**: "wire this to the brain" → drop in `cogito-sync.sh` + hook + capture, then watch a real lesson land in the brain.
 - **Teacher polish**: deploy the neural voice; decide the paid-model question; grow neuroscience lessons (content = the real "training").
 - **Build the dashboard** (its own repo, wired to the brain).
-- **Open (this session):** the council now auto-uses a non-Claude voice (on `main`); the converge hook is hardened to push brain-only to `main`. The hook fix is on branch `claude/brave-carson-8sa2lm`, **not yet on `main`** — pending the user's explicit "push to main" (+ optional: silence the git nag, fix the hook's by-hand `../..` path fallback).
+- **Done (this session):** council auto-uses a non-Claude voice + names which model actually answered; converge hook hardened (brain-only to `main`; converges edits + appends) and bug-fixed — **all on `main`**. Optional, not yet done: silence the git-check nag (Stop-hook ordering); fix the hook's by-hand `../..` repo-path fallback.
 
 ## Guardrails (always on)
 - One brain = `main`. The converge Stop hook pushes **brain files ONLY** to `main` (synthetic commit on `origin/main`; hardened 06-15 so a withheld branch commit can't ride along). **A direct/manual `main` push needs an EXPLICIT per-time yes — a generic "go"/"continue" is NOT main consent** (classifier enforces this; one "deploy it" is not standing permission).
