@@ -2,28 +2,49 @@
 _Surfaced at session start so a new session resumes instantly. Delete/replace when the mission changes._
 
 ## When the user says "Cogito"
-Do NOT re-interview from scratch — the mission is already specced. Greet in one line, confirm, then CONTINUE down the list.
+The upgrade-roadmap mission is **COMPLETE** (all 10 items). Do NOT resume it. Greet
+in one line, note the roadmap is done, and interview for the **next** mission — or
+pick up an optional follow-up below.
 
-## Mission
-Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap.md`, going down the ROI-ranked list.
+## Last mission (DONE)
+Implement the Cogito upgrade roadmap in `docs/projects/06-cogito-upgrade-roadmap.md`,
+ROI-ranked. **All 10 items shipped and verified** (#1–#2 a prior session; #3–#10 on
+2026-06-15), every change proven by running it, several by a decorrelated reviewer.
 
-## Where we are (2026-06-15)
-- **DONE (Tier 1):** #1 runnable verification gate (SKILL §5b); #2 lesson tags + importance `[I:1-10]` convention.
-- **DONE (Tier 2):** #4 consolidation pass + #5 decay/archive policy — one ledger-maintenance skill (`cogito-consolidate`, `/consolidate`) + two helpers: `scripts/cogito-consolidate.sh` (`report` clusters by tag; `verify` = conservation gate, every removed lesson must reappear in the archive) and `scripts/cogito-decay.sh` (`report` cold+low-value candidates; `touch` = refresh-on-use stamps `[seen:DATE]`). Both write to `LESSONS-ARCHIVE.md`, which the loader never reads, so retiring a lesson drops it from context without losing it. Wired into SKILL §4b + install.sh. **Mechanism only** — ledger below the ~60 trigger; decay's safety floor retires only *explicitly* low-importance lessons (none exist yet), so nothing was retired. Every path tested live.
-- **DONE (Tier 2 cont.):** #6 CoALA taxonomy + skill index + skill-creation gate — `skills/INDEX.md` (memory-type map: episodic=checkpoints, semantic=lessons, procedural=skills, working=context+ACTIVE-MISSION; + a description-keyed skill catalog) + `scripts/cogito-skill-check.sh` (runnable gate: frontmatter + listed-in-INDEX checks, states the Voyager/§5 "verified-in-a-real-session" rule) + protocol §4c. Audit passes all 4 skills; the bogus-name and unindexed-skill fail-paths verified.
-- **DONE (#7):** spaced-repetition for the learning log — Leitner ladder (`box:N due:DATE`, 1/3/7/16/35/90d) on each log lesson; `scripts/cogito-review.sh` (`due`/`list`/`grade`); the SessionStart hook now surfaces the most-overdue recap cue (guarded, non-fatal — the lesson-load path is untouched). Verified live incl. the hook. **→ Tier 2 COMPLETE.**
-- **DONE (#10):** fresh-context reviewer subagent (`.claude/agents/cogito-reviewer.md`) + protocol §5c grounded-signal rule + INDEX agents section. Proven live via a `general-purpose` proxy that independently re-verified this session's work against git + the scripts — and correctly **FAILED** an over-claim until the push landed (decorrelation working as designed). Invokable by `subagent_type` after the next session reload.
-- **DONE (#9):** packaged as a Claude Code plugin — `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` + `hooks/hooks.json`, reusing the existing skills/agents/scripts via explicit manifest paths (nothing moved; repo stays both a working repo and a plugin). `claude plugin validate .` passes clean; `marketplace add ./` registers it. Install: `/plugin marketplace add COGITO-SUM-cloude/COGITO` → `/plugin install cogito@cogito`. (Full install + restart load confirmable next session.)
-- **REMAINING — only the risky pair (HOLD for an explicit go-ahead + verify hard):**
-  - #3 index-then-load — touches the SessionStart **load path**; keep full-load as the safety net.
-  - #8 guard/auto-capture hooks (PreToolUse/Stop) — the tool boundary.
-  A memory system that fails to load its lessons is the worst outcome; prove any change before trusting it. Best done deliberately in a fresh session, not at the tail of a long one.
+- **#1 verification gate** (SKILL §5b) · **#2 lesson tags + importance** (§4b).
+- **#3 index-then-load** — `cogito-sync.sh` full-loads below ~80 lessons (safety net,
+  byte-identical today: 47→47 empty diff) then switches to index + always-load
+  `#critical`/`[I:≥9]` + grep-hint. `COGITO_LOAD_THRESHOLD` tunes it.
+- **#4 consolidate / #5 decay** — `cogito-consolidate` skill + `scripts/cogito-consolidate.sh`
+  (report/verify conservation gate) + `scripts/cogito-decay.sh` (report/touch) +
+  `LESSONS-ARCHIVE.md`. Mechanism only (ledger < trigger); nothing retired.
+- **#6 library hygiene** — `skills/INDEX.md` (CoALA map + skill/agent/hook catalog)
+  + `scripts/cogito-skill-check.sh` + §4c.
+- **#7 spaced repetition** — Leitner `box:/due:` on the learning log + `scripts/cogito-review.sh`
+  + a guarded SessionStart recap.
+- **#8 guard** — `scripts/cogito-guard.sh` blocks self-matching `pkill -f` and `rm -rf`
+  root at the tool boundary (fail-open, mention-immune); wired in settings.json +
+  plugin. Blocking Stop-gate deliberately deferred (§5d).
+- **#9 plugin** — `.claude-plugin/plugin.json` + `marketplace.json` + `hooks/hooks.json`
+  (`claude plugin validate .` clean). **#10 reviewer** — `.claude/agents/cogito-reviewer.md`
+  + §5c grounded-signal rule.
 
-## Guardrails (hard-won this session)
-- Sync ONLY `main` + the active working branch. NEVER push to old session branches — a stale push resurrects deleted ones.
-- Verify every change by re-reading/running it (SKILL §5b). Never trust "probably / build passed / captured."
-- Faceless: commit as `Cogito <cogito@users.noreply.github.com>`; nothing personal in artifacts.
-- New lessons use the tagged format: `[#tag] [I:1-10] SYMPTOM -> ROOT CAUSE -> RULE`.
+## Optional follow-ups (not blocking)
+- Live-confirm the plugin actually installs + loads in a FRESH session:
+  `/plugin marketplace add COGITO-SUM-cloude/COGITO` → `/plugin install cogito@cogito`
+  → `/plugin details cogito@cogito` (restart to apply).
+- If ever wanted: a NON-blocking Stop reminder (the blocking form was rejected).
+- Consolidation/decay are mechanisms awaiting their triggers (ledger ~47 < 60/80).
+
+## Guardrails (hard-won)
+- Sync ONLY `main` + the active working branch; never old session branches.
+- Verify by running, not reading. **Commit feature edits BEFORE testing mutations on
+  the same file** (a `git checkout` ate uncommitted work this session).
+- **Test a gate/guard on BOTH pass and fail paths**, and against inputs that merely
+  *mention* what it blocks (the guard blocked its own commit until fixed).
+- Faceless commits as `Cogito <cogito@users.noreply.github.com>`.
+- Load-path / tool-boundary changes: keep the safe fallback, prove before trust.
 
 ## Full context
-Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Latest checkpoint: `docs/checkpoints/2026-06-15-session-close.md`
+Roadmap: `docs/projects/06-cogito-upgrade-roadmap.md` · Final checkpoint:
+`docs/checkpoints/2026-06-15-roadmap-complete.md`
