@@ -18,7 +18,7 @@ Harden + upgrade Cogito's memory (file-based, no vector DB, low context-tax) so 
 5. DONE — Sharpened the JUDGE: explicit same-base-model decorrelation check ("one voice in triplicate") + judge-model-rotation guidance in cogito-council. Rotating onto a non-Claude judge waits on a key (#7).
 6. DONE (substrate) — Wikilink graph: `scripts/cogito-links.sh` (backlinks/out/all) + first prerequisite edges wired in the teacher's adenosine lesson. Bulk-link the brain WHEN we build the teacher (per the judge — premature before then).
 7. WIRED, awaiting key — `scripts/cogito-openrouter.sh` calls a free non-Claude model via `$OPENROUTER_API_KEY` (env secret; degrades to Claude-only with no key). Verified: reaches OpenRouter + builds the auth header correctly; the real call just needs the user's key. Integration documented in cogito-council.
-8. Obsidian "Bases"-style saved-query views over the lessons (minor; do if wanted).
+8. DONE — `scripts/cogito-query.sh`: structured saved queries over the ledger (tag / imp / critical / untagged / saved `<name>.q`) — the Bases pattern, data stays in LESSONS.md. Surfaced a maintenance finding: 36/58 lessons are untagged (older ones; reachable by keyword via #3, not by tag).
 DEFER (panel agreed): paid Fusion, local Hermes (big GPU), MCP "expose the brain" server (for the VR client later), local embedding index, the Obsidian app.
 
 ## For later (the real long-pole)
