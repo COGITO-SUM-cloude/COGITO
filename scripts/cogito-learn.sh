@@ -3,12 +3,12 @@
 # session (any repo) inherits it. Usage:
 #   scripts/cogito-learn.sh "SYMPTOM -> ROOT CAUSE -> RULE"
 #
-#   - In the central Cogito repo  -> append to the local ledger (then commit & push).
-#   - Elsewhere with $COGITO_TOKEN -> append to the central repo via the GitHub API.
-#   - Elsewhere with no token      -> queue locally + warn LOUDLY (never silently lose one).
+#   - In the central Cogito repo -> append to the local ledger (then commit & push).
+#   - Elsewhere (a satellite repo) -> queue locally + warn LOUDLY (never silently lose one);
+#     lessons reach the brain by being PROPOSED to the hub (gated) or relayed by a human.
 #
-# NOTE: the token (API) path is built but must be verified live the first time a
-# token exists — we do not trust unverified lesson-capture.
+# SECURITY (council 2026-06-16): the old token -> direct-API-write path is REMOVED (see the
+# Mode 2 note below). No satellite holds a canonical-write token — that is the blocked exfil shape.
 set -euo pipefail
 
 LESSON="$*"
@@ -24,34 +24,15 @@ if [ -n "$root" ] && [ -f "$root/$LP" ] && git -C "$root" remote -v 2>/dev/null 
   exit 0
 fi
 
-# Mode 2 — elsewhere with a token: push via the GitHub API (token read from env, never argv).
-if [ -n "${COGITO_TOKEN:-}" ]; then
-  if python3 - "$OWNER" "$REPO" "$LP" "$LESSON" <<'PY'
-import os,sys,json,base64,ssl,urllib.request
-owner,repo,path,lesson=sys.argv[1:5]; tok=os.environ["COGITO_TOKEN"]
-api=f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
-def call(url,method="GET",data=None,ctx=None):
-    r=urllib.request.Request(url,method=method,data=(json.dumps(data).encode() if data else None))
-    r.add_header("Authorization",f"Bearer {tok}"); r.add_header("Accept","application/vnd.github+json")
-    return json.load(urllib.request.urlopen(r,context=ctx))
-def run(ctx):
-    cur=call(api,ctx=ctx); body=base64.b64decode(cur["content"]).decode()
-    body=(body if body.endswith("\n") else body+"\n")+f"- {lesson}\n"
-    call(api,"PUT",{"message":"cogito: capture lesson from a satellite session",
-                    "content":base64.b64encode(body.encode()).decode(),"sha":cur["sha"]},ctx=ctx)
-try:
-    run(None)
-except ssl.SSLError:
-    sys.stderr.write("cogito-learn: TLS verification FAILED for api.github.com — refusing to send the token over an UNVERIFIED connection. If your egress intercepts TLS, install its CA cert; never disable verification with a secret in flight.\n")
-    sys.exit(5)
-print("ok")
-PY
-  then echo "cogito-learn: pushed the lesson to the central brain via API."; exit 0
-  else echo "cogito-learn: API push FAILED — queueing locally instead (lesson NOT lost)." >&2; fi
-fi
+# Mode 2 (a stored COGITO_TOKEN -> direct GitHub-API write to the brain's default branch)
+# was REMOVED for security (council ruling 2026-06-16): a scattered write-token is the exact
+# exfil shape the harness safety classifier blocks, and a direct write to canon lets one
+# session poison every reader. Satellites must PROPOSE (a PR the hub gates + auto-merges for
+# append-only), never hold a canonical-write token. Until that propose path is wired and
+# live-tested, satellite lessons fall through to the local queue below and a human relays them.
 
 # Mode 3 — fallback: queue locally, warn loudly.
 mkdir -p "$(dirname "$QUEUE")"; printf -- '- %s\n' "$LESSON" >> "$QUEUE"
 echo "cogito-learn: queued to $QUEUE (lesson saved locally)." >&2
-echo "  Set COGITO_TOKEN (docs/cogito-everywhere.md) for auto-sync, or paste these into a Cogito session." >&2
+echo "  Relay these to a Cogito session (or the hub propose-and-gate path) — write-back by stored token was removed for security." >&2
 exit 0

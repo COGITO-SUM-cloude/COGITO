@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cogito brain sync — make THIS session (in ANY repo) start KNOWING every lesson.
 #
-# Run as a SessionStart hook: it loads the protocol + lessons into ~/.claude AND
+# Run as a SessionStart hook: it loads the LESSONS into ~/.claude AND
 # prints the lessons to stdout. A SessionStart hook's stdout is injected into the
 # session's context, so the session literally starts with the lessons in mind and
 # can't repeat a past mistake — syncing to disk alone is not enough.
@@ -10,6 +10,8 @@
 #     never the checked-out session branch — so every session reads the SAME brain
 #     and they cannot silently diverge. Falls back to the working tree if offline.
 #   - In any other repo: clones the PUBLIC Cogito repo (anonymous, no token).
+# SECURITY (council 2026-06-16): syncs LESSONS.md ONLY — never auto-overwrites SKILL.md from
+# the remote, which would let a remote tip silently reprogram the agent's own instructions.
 set -euo pipefail
 
 DST="$HOME/.claude/skills/cogito-protocol"
@@ -22,19 +24,17 @@ mkdir -p "$DST"
 # temp files and refuses to install an EMPTY ledger, so a partial/failed read can
 # never blank the brain. Returns non-zero (-> caller falls back) on any problem.
 load_canonical() {
-  local root="$1" t_les t_skill
+  local root="$1" t_les
   git -C "$root" cat-file -e "$BRAIN_REF:$SUB/LESSONS.md" 2>/dev/null || return 1
-  t_les="$(mktemp)"; t_skill="$(mktemp)"
+  t_les="$(mktemp)"
   if git -C "$root" show "$BRAIN_REF:$SUB/LESSONS.md" > "$t_les" 2>/dev/null && [ -s "$t_les" ]; then
     mv "$t_les" "$DST/LESSONS.md"
   else
-    rm -f "$t_les" "$t_skill"; return 1
+    rm -f "$t_les"; return 1
   fi
-  if git -C "$root" show "$BRAIN_REF:$SUB/SKILL.md" > "$t_skill" 2>/dev/null && [ -s "$t_skill" ]; then
-    mv "$t_skill" "$DST/SKILL.md"
-  else
-    rm -f "$t_skill"
-  fi
+  # SKILL.md is intentionally NOT synced from the remote (supply-chain: auto-overwriting the
+  # agent's own operating instructions from a remote tip = silent reprogramming). Keep the
+  # protocol version-controlled locally; update it deliberately. (Council ruling 2026-06-16.)
   return 0
 }
 
@@ -56,8 +56,7 @@ if [ -n "$root" ] && [ -f "$root/$SUB/LESSONS.md" ] \
 else
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
   if git clone --depth 1 --quiet "$REPO_URL" "$tmp" 2>/dev/null && [ -f "$tmp/$SUB/LESSONS.md" ]; then
-    cp -f "$tmp/$SUB/SKILL.md"   "$DST/SKILL.md"
-    cp -f "$tmp/$SUB/LESSONS.md" "$DST/LESSONS.md"
+    cp -f "$tmp/$SUB/LESSONS.md" "$DST/LESSONS.md"   # LESSONS only — never auto-pull SKILL.md from the remote (supply-chain)
     src="public central repo"
   fi
 fi
