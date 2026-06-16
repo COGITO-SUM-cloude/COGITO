@@ -1,0 +1,7 @@
+# Concurrent appends to the brain ledger merge cleanly: `union` keeps BOTH sides' new
+# tail lines instead of conflicting. This is what lets multiple sessions / proposals
+# add lessons without clobbering each other (council 2026-06-16). It resolves only the
+# textual tail-append case — semantic merges (consolidation, supersession) stay a
+# serialized maintainer pass, never concurrent.
+skills/cogito-protocol/LESSONS.md merge=union
+skills/cogito-protocol/LESSONS-ARCHIVE.md merge=union
