@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cogito — control room</title>
+<style>
+  :root{ --bg:#0a0c10; --soft:#11151c; --card:#0f141b; --line:#1f2630; --fg:#e7edf5;
+         --muted:#94a3b8; --accent:#7dd3fc; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+         --maxw:1080px; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:15px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px 48px}
+  header{padding:26px 4px 16px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  header h1{margin:0;font-size:22px;letter-spacing:-.02em}
+  header p{margin:5px 0 0;color:var(--muted);font-size:14px}
+  .pill{display:inline-block;margin-top:10px;font-size:12px;color:var(--warn);
+        border:1px solid #3a3320;background:#1a160c;border-radius:999px;padding:3px 10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}
+  .card > h2{margin:0 0 4px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  .card > .sub{margin:0 0 18px;color:var(--muted);font-size:13px}
+  code{background:#161c25;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.85em;color:#cbd5e1}
+
+  /* ---- 1. MAP ---- */
+  .hub{max-width:440px;margin:6px auto 0;text-align:center;background:linear-gradient(180deg,#0d2230,#0a1822);
+       border:1px solid #1d5b7a;border-radius:14px;padding:16px 18px}
+  .hub .t{font-size:15px;font-weight:700;letter-spacing:.02em}
+  .hub .s{color:var(--muted);font-size:13px;margin-top:3px}
+  .hub .bits{margin-top:10px;font-size:12px;color:#9fb4c7}
+  .stem{width:2px;height:22px;background:var(--line);margin:0 auto}
+  .crossbar{height:2px;background:var(--line);max-width:70%;margin:0 auto}
+  .spokes{display:flex;gap:12px;justify-content:center;margin-top:0}
+  .spoke{flex:1;max-width:170px;text-align:center;background:var(--soft);border:1px solid var(--line);
+         border-radius:11px;padding:13px 8px}
+  .spoke .uparr{color:var(--good);font-size:13px;margin-bottom:5px}
+  .spoke .nm{font-weight:600}
+  .spoke .role{color:var(--muted);font-size:12px;margin-top:2px}
+  .flows{display:flex;gap:14px;margin:20px auto 0;max-width:560px}
+  .flow{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;color:#cbd5e1}
+  .flow b{color:var(--fg)}
+  .flow.out b{color:var(--accent)} .flow.back b{color:var(--good)}
+
+  /* ---- two-column row ---- */
+  .row{display:flex;gap:18px;align-items:flex-start}
+  .row > *{flex:1;margin-bottom:0}
+  .row .inbox{flex:1.4}
+  @media(max-width:760px){ .row{flex-direction:column} .flows{flex-direction:column} .spokes{flex-wrap:wrap} }
+
+  /* ---- 2. LIVE ---- */
+  .live-item{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line)}
+  .live-item:last-child{border-bottom:none}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.03)}
+  .dot.good{background:var(--good)} .dot.warn{background:var(--warn)} .dot.off{background:#475569}
+  .live-item .nm{font-weight:600}
+  .live-item .meta{color:var(--muted);font-size:12px}
+  .live-item a{margin-left:auto;color:var(--accent);text-decoration:none;font-size:12px;white-space:nowrap}
+
+  /* ---- 3. INBOX ---- */
+  .count{display:inline-block;background:#1d5b7a;color:#e7f6ff;border-radius:999px;
+         padding:1px 9px;font-size:12px;font-weight:700;margin-left:6px}
+  .entry{border:1px solid var(--line);border-left:3px solid #1d5b7a;border-radius:10px;
+         padding:13px 14px;margin-top:13px;transition:.2s}
+  .entry .from{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .entry .from .tag{color:var(--accent)}
+  .entry .lesson{font-size:13.5px;line-height:1.55}
+  .entry .lesson b{color:#fff}
+  .actions{display:flex;gap:9px;margin-top:13px}
+  .actions button{flex:none;border-radius:9px;padding:7px 15px;font-weight:600;font-size:13px;cursor:pointer;
+                  border:1px solid var(--line);background:var(--soft);color:var(--fg)}
+  .actions .ok{background:linear-gradient(180deg,#0f3d2a,#0a2a1d);border-color:#14744c;color:#c9f7e2}
+  .actions .no{color:#fca5a5;border-color:#3a2326}
+  .actions .ok:hover{border-color:var(--good)} .actions .no:hover{border-color:var(--bad)}
+  .entry.merged{border-left-color:var(--good);background:#0c1f14}
+  .entry.dismissed{opacity:.4;border-left-color:#475569}
+  .entry.merged .actions,.entry.dismissed .actions{font-weight:600;font-size:13px}
+  .verdict{font-size:13px;font-weight:600}
+  .verdict.m{color:var(--good)} .verdict.d{color:var(--muted)}
+  #empty{display:none;margin-top:14px;color:var(--good);font-size:13.5px}
+  .note{margin-top:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Cogito — control room</h1>
+    <p>How it works · where it's live · what's waiting to go into the notebook.</p>
+    <span class="pill">Demo — sample data. Buttons change this screen only (not the real brain yet).</span>
+  </header>
+
+  <!-- 1. MAP -->
+  <section class="card">
+    <h2>How it works</h2>
+    <p class="sub">One brain feeds every project; what each project learns comes back here for your OK.</p>
+
+    <div class="hub">
+      <div class="t">THE NOTEBOOK · the brain</div>
+      <div class="s">one canonical copy, on <code>main</code></div>
+      <div class="bits">92 lessons · the mission · 6 skills · the teacher app · the brain API</div>
+    </div>
+    <div class="stem"></div>
+    <div class="crossbar"></div>
+    <div class="spokes">
+      <div class="spoke"><div class="uparr">↑</div><div class="nm">Teacher</div><div class="role">your AI tutor</div></div>
+      <div class="spoke"><div class="uparr">↑</div><div class="nm">Paint</div><div class="role">art project</div></div>
+      <div class="spoke"><div class="uparr">↑</div><div class="nm">CMS</div><div class="role">this dashboard</div></div>
+    </div>
+
+    <div class="flows">
+      <div class="flow out"><b>↓ OUT</b> — every project starts up already knowing Cogito's memory.</div>
+      <div class="flow back"><b>↑ BACK</b> — what a project learns is sent back, and waits in the Inbox for you.</div>
+    </div>
+  </section>
+
+  <div class="row">
+    <!-- 2. LIVE -->
+    <section class="card">
+      <h2>Where it's live</h2>
+      <p class="sub">Each project — up or down, public or private.</p>
+
+      <div class="live-item">
+        <span class="dot warn"></span>
+        <div><div class="nm">Teacher</div><div class="meta">live · private (Vercel login)</div></div>
+        <a href="#">open ↗</a>
+      </div>
+      <div class="live-item">
+        <span class="dot warn"></span>
+        <div><div class="nm">Paint</div><div class="meta">live · private (login wall)</div></div>
+        <a href="#">open ↗</a>
+      </div>
+      <div class="live-item">
+        <span class="dot good"></span>
+        <div><div class="nm">CMS — this dashboard</div><div class="meta">live · public</div></div>
+        <a href="#">open ↗</a>
+      </div>
+      <div class="live-item">
+        <span class="dot good"></span>
+        <div><div class="nm">The brain (repo)</div><div class="meta">synced · <code>main</code></div></div>
+        <a href="#">open ↗</a>
+      </div>
+
+      <p class="note">Dots are illustrative for now. The real screen will check each one live, from a logged-out view, before calling it up.</p>
+    </section>
+
+    <!-- 3. INBOX -->
+    <section class="card inbox">
+      <h2>Changes waiting for the notebook <span class="count" id="count">3</span></h2>
+      <p class="sub">Each is a lesson a project learned. Accept to add it to the brain, or reject it.</p>
+
+      <div class="entry">
+        <div class="from">from <b>Paint</b> · <span class="tag">#boundary</span></div>
+        <div class="lesson">
+          <b>Symptom</b> — a project could read the brain but had no safe way to write back.<br>
+          <b>Cause</b> — the only write key is the brain's key, which a bot must never hold.<br>
+          <b>Rule</b> — projects write to their own outbox; a person merges it into the brain.
+        </div>
+        <div class="actions">
+          <button class="ok" onclick="decide(this,'merged')">Accept</button>
+          <button class="no" onclick="decide(this,'dismissed')">Reject</button>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="from">from <b>Teacher</b> · <span class="tag">#verify</span></div>
+        <div class="lesson">
+          <b>Symptom</b> — a page was logged as "live" while it sat behind a login wall.<br>
+          <b>Cause</b> — it was only ever tested from the owner's logged-in session.<br>
+          <b>Rule</b> — confirm "live" from a logged-out device before calling it live.
+        </div>
+        <div class="actions">
+          <button class="ok" onclick="decide(this,'merged')">Accept</button>
+          <button class="no" onclick="decide(this,'dismissed')">Reject</button>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="from">from <b>CMS</b> · <span class="tag">#process</span></div>
+        <div class="lesson">
+          <b>Symptom</b> — a feature was started in a session that couldn't ship it.<br>
+          <b>Cause</b> — each session is walled to one project's repo.<br>
+          <b>Rule</b> — build each project from its own repo's session.
+        </div>
+        <div class="actions">
+          <button class="ok" onclick="decide(this,'merged')">Accept</button>
+          <button class="no" onclick="decide(this,'dismissed')">Reject</button>
+        </div>
+      </div>
+
+      <div id="empty">✓ Inbox empty — the notebook is up to date.</div>
+      <p class="note">When we wire this for real, <b>Accept</b> will save the lesson into the brain through a safe path — the brain's key never lives inside this dashboard.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+function decide(btn, verdict){
+  const card = btn.closest('.entry');
+  if(card.classList.contains('merged') || card.classList.contains('dismissed')) return;
+  card.classList.add(verdict);
+  const label = verdict === 'merged'
+    ? '<span class="verdict m">✓ added to the notebook</span>'
+    : '<span class="verdict d">dismissed</span>';
+  card.querySelector('.actions').innerHTML = label;
+  update();
+}
+function update(){
+  const left = document.querySelectorAll('.entry:not(.merged):not(.dismissed)').length;
+  document.getElementById('count').textContent = left;
+  document.getElementById('empty').style.display = left === 0 ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
