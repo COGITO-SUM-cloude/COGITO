@@ -39,8 +39,11 @@ def run(ctx):
     body=(body if body.endswith("\n") else body+"\n")+f"- {lesson}\n"
     call(api,"PUT",{"message":"cogito: capture lesson from a satellite session",
                     "content":base64.b64encode(body.encode()).decode(),"sha":cur["sha"]},ctx=ctx)
-try: run(None)
-except ssl.SSLError: run(ssl._create_unverified_context())  # egress may intercept TLS
+try:
+    run(None)
+except ssl.SSLError:
+    sys.stderr.write("cogito-learn: TLS verification FAILED for api.github.com — refusing to send the token over an UNVERIFIED connection. If your egress intercepts TLS, install its CA cert; never disable verification with a secret in flight.\n")
+    sys.exit(5)
 print("ok")
 PY
   then echo "cogito-learn: pushed the lesson to the central brain via API."; exit 0
