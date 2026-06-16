@@ -15,10 +15,10 @@ Everything stays $0 + file-native where possible; a small paid model is the one 
 - **Shared brain: ON.** `COGITO_TOKEN` (fine-grained, contents:rw, cogito-only) set + **verified live** (write-back works). READ half = `scripts/cogito-sync.sh` + SessionStart hook. **To wire another repo (paint, dashboard): do it FROM that repo's own session** — cogito sessions are walled to cogito.
 
 ## Resume here (next)
-- When in **another repo's session**: "wire this to the brain" → drop in `cogito-sync.sh` + hook + capture, then watch a real lesson land in the brain.
+- **Brain write-back** (council 2026-06-16; full design → `docs/checkpoints/2026-06-16-brain-writeback-council.md`): satellites PROPOSE (no scattered write-token); hub gates — append=auto-merge, contradict=one-tap; correction = supersede-by-archival. Read-sync is LESSONS-only (SKILL.md never auto-pulled). **NEXT = a LIVE TEST from a satellite session: can it get a proposal to the hub at all?** (a private repo likely needs a one-time owner grant.) Do NOT build the hub gate before that test.
 - **Teacher polish**: deploy the neural voice; decide the paid-model question; grow neuroscience lessons (content = the real "training").
 - **Build the dashboard** (its own repo, wired to the brain).
-- **Done (this session):** council auto-uses a non-Claude voice + names which model actually answered; converge hook hardened (brain-only to `main`; converges edits + appends) and bug-fixed — **all on `main`**. Optional, not yet done: silence the git-check nag (Stop-hook ordering); fix the hook's by-hand `../..` repo-path fallback.
+- **Done (this session):** step-A cleanup on branch `claude/brave-carson-8sa2lm` (947fb8c) **PENDING `push to main`** — removed the satellite write-token path (cogito-learn Mode 2) + stopped SKILL.md auto-overwrite (cogito-sync) + added `LESSONS merge=union`. Earlier on `main`: non-Claude council voice, hardened converge hook, TLS fix.
 
 ## Guardrails (always on)
 - One brain = `main`. The converge Stop hook pushes **brain files ONLY** to `main` (synthetic commit on `origin/main`; hardened 06-15 so a withheld branch commit can't ride along). **A direct/manual `main` push needs an EXPLICIT per-time yes — a generic "go"/"continue" is NOT main consent** (classifier enforces this; one "deploy it" is not standing permission).
