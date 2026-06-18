@@ -3,6 +3,10 @@
 Room to grow. This directory is where deeper documentation lands as Cogito
 matures beyond the protocol itself.
 
+> **Start here:** [**How to use your AI base**](AI-BASE-GUIDE.md) — a plain-English
+> guide to every agent, skill, hook, and prompt, with the exact words to say to use
+> them. Works on any plan, not just Max.
+
 ## Candidate next steps
 
 - **Worked examples** — annotated session transcripts showing the loop in
