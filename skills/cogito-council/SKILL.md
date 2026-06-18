@@ -26,19 +26,24 @@ repeatable.
 ## The procedure
 1. **Sharpen the question.** State it in one or two checkable sentences plus what
    a good answer must cover. A vague prompt produces a noisy panel.
-2. **Convene the panel — independent + diverse.** Spawn 3–5 panelists **in a
-   single message** so they run in parallel — each a `general-purpose` agent given
-   a DISTINCT lens, told to answer **independently** and not assume other agents
-   exist. All share one base model, so diversity comes from the lenses, not the
-   weights:
+2. **Convene the panel — independent + diverse.** Spawn the panel **in a single
+   message** so they run in parallel — each a `cogito-panelist` agent given a
+   DISTINCT lens, told to answer **independently** and not assume other agents exist.
+   Use `cogito-panelist`, **not `general-purpose`**: the panelist carries a minimal
+   tool surface (`Read, Grep, WebSearch, WebFetch`), whereas a `general-purpose`
+   agent loads the entire MCP tool catalog into *every* panelist — the lens never
+   uses those tools, and ×3–5 that bloat is what made a summon cost ~100k tokens
+   before it reasoned at all (see §Budget guard). Size the panel by stakes (§Council
+   size: lite vs full) and stay under the cap. All share one base model, so diversity
+   comes from the lenses, not the weights:
    - rotate lenses like **pragmatist / skeptic / first-principles / domain-expert
      / contrarian**, or roles natural to the question;
    - vary **effort** (a couple deep, one fast) and framing;
    - **ground the research/domain lens in the live web:** when the question turns on
      current facts (prices, versions, what's true *now*, who said what), the
      research/domain-expert panelist MUST use its built-in web search/fetch tools and
-     cite sources — a `general-purpose` agent already has them, and it's free (no
-     OpenRouter paid web plugin). An un-searched "expert" answer on a time-sensitive
+     cite sources — the `cogito-panelist` agent already has `WebSearch`/`WebFetch`,
+     and it's free (no OpenRouter paid web plugin). An un-searched "expert" answer on a time-sensitive
      question is a guess; make that lens earn its name. Stale-fact risk is itself a
      blind spot the panelist should name when it couldn't verify.
    - require each to ground its claims (a check, a source, a real constraint) and
@@ -66,6 +71,32 @@ repeatable.
    presenting it as fact. **Note which non-Claude model actually answered** (or that
    the voice was unavailable), so a silent fallback is never mistaken for the
    intended voice.
+
+## Council size — lite (default) vs full
+Summon cost scales with the panel, so size by stakes, not by habit:
+- **Lite (default)** — **3 Claude panelists** (e.g. pragmatist + skeptic + a
+  first-principles or research lens) plus the free non-Claude voice and the judge.
+  Use it for most multi-opinion calls; it already delivers the panel→judge gain at
+  the low end of the range.
+- **Full (high-stakes)** — **up to 5 Claude panelists** (add domain-expert +
+  contrarian) plus the non-Claude voice and a decorrelated judge. Reserve it for
+  calls where being wrong is expensive: architecture, research you'll act on,
+  irreversible moves.
+
+Default to lite; escalate to full only when the stakes justify the extra agents.
+
+## Budget guard (a summon can't silently blow the bank)
+- **Never spawn a panelist as `general-purpose` (or any `tools: *` agent).** That
+  loads the whole MCP catalog into every panelist and is exactly what made a summon
+  cost ~100k. Panelists are `cogito-panelist`; the judge is `cogito-judge` — both
+  carry a minimal tool surface by design.
+- **Hard cap per summon:** at most **5 Claude panelists + 1 judge + 1 non-Claude
+  voice**. The non-Claude voice is a single HTTP call (`scripts/cogito-openrouter.sh`),
+  not an agent, so it adds negligible cost.
+- If a question seems to need more than the cap, **stop and ask** rather than scaling
+  up silently. More agents is rarely the fix — a sharper question and sharper lenses
+  are; past a point a council just converges into theatre, and unbounded sub-agent
+  fan-out has burned us before.
 
 ## Distinctness is the whole game (the Claude-only caveat)
 One model answering five times helps only if the five are genuinely independent
