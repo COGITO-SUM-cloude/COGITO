@@ -14,6 +14,17 @@ BRAIN_REF="${COGITO_BRAIN_REF:-origin/main}"   # the ONE canonical brain — NEV
 
 mkdir -p "$SKILL_DST"
 
+# Attribute commits made in THIS repo to the owner's GitHub account. GitHub links a
+# commit to an account by its no-reply email; the old faceless
+# "cogito@users.noreply.github.com" happened to match an UNRELATED real account
+# (whoever owns the username "cogito"), so every commit was miscredited to a stranger.
+# Web containers are ephemeral, so set it each session. Scoped to the Cogito repo by
+# its remote, so other projects in other sessions are never touched.
+if git -C "$REPO" remote -v 2>/dev/null | grep -qiE 'COGITO-SUM-cloude/COGITO(\.git)?'; then
+  git -C "$REPO" config user.name  "Cogito" 2>/dev/null || true
+  git -C "$REPO" config user.email "291881939+COGITO-SUM-cloude@users.noreply.github.com" 2>/dev/null || true
+fi
+
 # Load the brain from a single fixed point (origin/main), not the branch this
 # container happened to check out — otherwise each session reads a different
 # branch's memory and they silently diverge (the cross-session consistency bug).
