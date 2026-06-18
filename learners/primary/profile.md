@@ -41,8 +41,17 @@ separately by `cogito-review.sh` (the log's Leitner boxes); this column tracks *
 | knowing-vs-doing | (log L3) | — | mastered | 2026-06-14 derived |
 | tired-brain | (log L2) | retrieval-practice | seeded | — |
 | adenosine | docs/learning/lessons/neuroscience/L-adenosine.md | retrieval-practice | learning | 2026-06-15 derived core |
+| dopamine | docs/learning/lessons/neuroscience/L-dopamine.md | adenosine | locked | — |
+| blood-brain-barrier | docs/learning/lessons/neuroscience/L-blood-brain-barrier.md | adenosine | locked | — |
+| tolerance | docs/learning/lessons/neuroscience/L-tolerance.md | adenosine | locked | — |
 
 _In progress: **adenosine** — core mechanism + the caffeine-crash derived live
 (2026-06-15); the name and "sleep clears it" were supplied, so confirm them at the first
 review before marking mastered. Next bridge: the seeded **tired-brain** lesson (why a
 sludge-filled brain can't learn well)._
+
+_Batch 2 prepped (2026-06-18), locked behind adenosine — the mechanistic
+hype-filters for the goal: **dopamine** (wanting ≠ pleasure; what "focus boosters"
+target), **blood-brain-barrier** (can it even reach the brain? — lab-dish ≠ pill), and
+**tolerance** (the brain dials boosters down → rebound; builds straight on the caffeine
+mechanism). They unlock as `next` once adenosine is confirmed mastered._
