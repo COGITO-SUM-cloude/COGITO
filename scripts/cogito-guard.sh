@@ -40,6 +40,22 @@ print(s)' "$cmd" 2>/dev/null || true)"
     echo "rm on a root path (/ ~ \$HOME /*) is catastrophic and unrecoverable. Target a specific subdirectory, never the root."
     return
   fi
+
+  # 2b. rm whose root target was QUOTED — the strip-spans blind spot. Stripping quoted
+  #     spans (for the mention-vs-execution call) also erases a genuinely-dangerous quoted
+  #     ARGUMENT, so `rm -rf "/"` / `rm -rf '$HOME'` slipped past check 2 (verified). Deny
+  #     only when BOTH hold: (a) the skeleton has rm AT COMMAND POSITION with its argument
+  #     stripped (= the arg was quoted), and (b) the raw command contains a quoted root
+  #     token. The conjunction keeps mentions safe — `echo "rm -rf /"` and
+  #     `git commit -m "done; rm -rf /"` have NO rm at command position in the skeleton.
+  if printf '%s' "$res" | grep -qE '(^|[;&|(])[[:space:]]*(sudo[[:space:]]+)?rm([[:space:]]+-[[:alnum:]]+)*[[:space:]]*($|[;&|])' \
+     && printf '%s' "$cmd" | python3 -c 'import sys,re
+s=sys.stdin.read(); q=chr(39); d=chr(34)
+pat="(["+q+d+"])(/|/\\*|~|\\$HOME)\\1"
+sys.exit(0 if re.search(pat,s) else 1)' 2>/dev/null; then
+    echo "rm targeting a quoted root path (\"/\", '\$HOME', \"/*\") is catastrophic and unrecoverable — quoting it does not make it safe. Target a specific subdirectory, never the root."
+    return
+  fi
 }
 
 # ---- selftest: the contract, as runnable assertions -------------------------------
@@ -66,7 +82,14 @@ selftest() {
   check deny  'sudo rm -rf /'
   check deny  'rm -r -f /'
   check deny  'git commit -m "x"; rm -rf /'         # real rm after an operator
+  check deny  'rm -rf "/"'                          # quoted root — the strip-spans blind spot
+  check deny  "rm -rf '/'"
+  check deny  'rm -rf "$HOME"'
+  check deny  'rm -rf "/*"'
+  check deny  'sudo rm -rf "/"'
   # must ALLOW — safe commands, or merely MENTIONING a dangerous string
+  check allow 'rm -rf "./build"'                     # quoted RELATIVE path — safe
+  check allow 'git commit -m "done; rm -rf /"'       # operator + root INSIDE a message (not execution)
   check allow 'pkill -x exactname'
   check allow 'pkill chrome'
   check allow 'pgrep -f pattern'

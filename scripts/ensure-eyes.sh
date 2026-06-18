@@ -16,7 +16,10 @@
 # the first run in a fresh container, nothing after.
 set -euo pipefail
 
-STABLE_DIR="/root/.cache/cogito-eyes"
+# ${HOME} resolves to /root in the root web-Claude sandbox (so .mcp.json's literal
+# /root path still matches) but stays correct for a non-root local install too.
+# Override with COGITO_EYES_DIR if your .mcp.json points elsewhere.
+STABLE_DIR="${COGITO_EYES_DIR:-${HOME}/.cache/cogito-eyes}"
 STABLE="$STABLE_DIR/chrome"          # stable path that .mcp.json + see.sh point at
 mkdir -p "$STABLE_DIR"
 
@@ -26,7 +29,7 @@ if [ -x "$STABLE" ] && "$STABLE" --version >/dev/null 2>&1; then
 fi
 
 echo "eyes: installing Chrome for Testing (one-time for this container)..."
-OUT="$(npx -y @puppeteer/browsers install chrome@stable --path /root/.cache/puppeteer 2>&1 | tail -1)"
+OUT="$(npx -y @puppeteer/browsers install chrome@stable --path "${HOME}/.cache/puppeteer" 2>&1 | tail -1)"
 echo "  $OUT"
 BIN="$(printf '%s\n' "$OUT" | grep -oE '/[^ ]*/chrome-linux64/chrome' | tail -1)"
 
