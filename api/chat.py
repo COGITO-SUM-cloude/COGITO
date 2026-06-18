@@ -57,7 +57,10 @@ def call_llm(prompt):
             "https://openrouter.ai/api/v1/chat/completions", data=body,
             headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"}, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=45) as r:
+            # Per-model timeout kept well under the Vercel function budget (maxDuration
+            # 60s in vercel.json): one slow/hung free model must not eat the whole budget
+            # and starve the fallbacks. 5 models x 10s = 50s < 60s.
+            with urllib.request.urlopen(req, timeout=10) as r:
                 return json.load(r)["choices"][0]["message"]["content"], None
         except Exception:
             continue
@@ -75,7 +78,12 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
+            # Cap the read: a chat turn is tiny, so refuse to pull an arbitrarily large
+            # body into memory on an untrusted public endpoint (a declared Content-Length
+            # of gigabytes would otherwise be read whole). 64 KB is generous for messages.
             n = int(self.headers.get("Content-Length", 0))
+            if n < 0 or n > 65536:
+                return self._send(413, {"reply": "That message is too large — keep it short and send again."})
             messages = json.loads(self.rfile.read(n) or b"{}").get("messages", [])
         except Exception:
             messages = []

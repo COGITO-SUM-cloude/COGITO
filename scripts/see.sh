@@ -17,7 +17,7 @@ URL="${1:?usage: scripts/see.sh <url> [out.png] [WxH]}"
 OUT="${2:-/tmp/eyes.png}"
 SIZE="${3:-1280x1000}"
 W="${SIZE%x*}"; H="${SIZE#*x}"
-CHROME="/root/.cache/cogito-eyes/chrome"
+CHROME="${COGITO_EYES_DIR:-${HOME}/.cache/cogito-eyes}/chrome"   # ${HOME}=/root in the web sandbox; matches .mcp.json there
 
 if [ ! -x "$CHROME" ]; then
   echo "eyes: Chrome not installed yet — running scripts/ensure-eyes.sh first." >&2

@@ -1,0 +1,37 @@
+name: ci
+
+# Cheap, dependency-free guards so a regression in the load-bearing pieces is caught
+# before it reaches anyone's session: the safety guard's own contract, shell + python
+# syntax, and the validity of every manifest the plugin/hooks load.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: cogito-guard selftest (the safety contract, as assertions)
+        run: bash scripts/cogito-guard.sh --selftest
+
+      - name: shell syntax (bash -n)
+        run: |
+          set -e
+          for f in scripts/*.sh .claude/hooks/*.sh install.sh; do
+            bash -n "$f" && echo "ok  $f"
+          done
+
+      - name: python syntax
+        run: python3 -m py_compile api/chat.py
+
+      - name: manifest / config JSON is valid
+        run: |
+          set -e
+          for j in .claude-plugin/plugin.json .claude-plugin/marketplace.json \
+                   .mcp.json hooks/hooks.json .claude/settings.json vercel.json; do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$j" && echo "ok  $j"
+          done

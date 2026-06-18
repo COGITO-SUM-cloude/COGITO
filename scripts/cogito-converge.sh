@@ -57,9 +57,12 @@ if [ "$DRYRUN" = "1" ]; then
   exit 0
 fi
 
-# commit ONLY the brain paths (faceless) — never other work in the tree
-GIT_AUTHOR_NAME="Cogito"    GIT_AUTHOR_EMAIL="cogito@users.noreply.github.com" \
-GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="cogito@users.noreply.github.com" \
+# commit ONLY the brain paths — never other work in the tree. Author = the repo
+# owner's GitHub no-reply (291881939+COGITO-SUM-cloude) so contributions credit the
+# owner. (The old "cogito@users.noreply.github.com" wasn't faceless — it matched an
+# UNRELATED real account that owns the username "cogito".)
+GIT_AUTHOR_NAME="Cogito"    GIT_AUTHOR_EMAIL="291881939+COGITO-SUM-cloude@users.noreply.github.com" \
+GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="291881939+COGITO-SUM-cloude@users.noreply.github.com" \
   git commit -q --no-verify --only -m "cogito: auto-save brain [stop-hook]" -- "${changed[@]}" 2>/dev/null \
   || exit 0   # nothing actually committed -> bail quietly
 
@@ -100,8 +103,8 @@ if [ "$TO_MAIN" = "1" ]; then
     basetree="$(git rev-parse -q --verify "$base^{tree}" 2>/dev/null || true)"
     rm -f "$tmpidx" 2>/dev/null || true
     if [ "$ok" = "yes" ] && [ -n "$newtree" ] && [ "$newtree" != "$basetree" ]; then
-      newcommit="$(GIT_AUTHOR_NAME="Cogito" GIT_AUTHOR_EMAIL="cogito@users.noreply.github.com" \
-                   GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="cogito@users.noreply.github.com" \
+      newcommit="$(GIT_AUTHOR_NAME="Cogito" GIT_AUTHOR_EMAIL="291881939+COGITO-SUM-cloude@users.noreply.github.com" \
+                   GIT_COMMITTER_NAME="Cogito" GIT_COMMITTER_EMAIL="291881939+COGITO-SUM-cloude@users.noreply.github.com" \
                    git commit-tree "$newtree" -p "$base" \
                    -m "cogito: converge brain to main [stop-hook]" 2>/dev/null || true)"
       [ -n "$newcommit" ] \
