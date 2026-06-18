@@ -39,6 +39,11 @@ LESSON = (
     "low sugar' (it's mostly adenosine load)."
 )
 MODELS = [
+    # openrouter/free is OpenRouter's auto-router over whatever free models are live
+    # right now — tried FIRST so a single deprecated/rate-limited slug can't blank the
+    # teacher (the "free model is busy" failure). The explicit slugs below remain a
+    # belt-and-suspenders fallback if the router itself is unavailable.
+    "openrouter/free",
     "nvidia/nemotron-3-nano-30b-a3b:free",
     "google/gemma-4-31b-it:free",
     "meta-llama/llama-3.3-70b-instruct:free",
