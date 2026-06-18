@@ -34,6 +34,7 @@ value: they decorrelate a check or a search from the main thread.
 |---|---|
 | **cogito-reviewer** | before trusting a "done" / "fixed" / "works" claim — a fresh-context done-check that restates the definition-of-done and verifies it against grounded signals (command / test / build / HTTP / file / git), returning PASS / FAIL / UNVERIFIABLE with evidence. Read-only. |
 | **design-qa** | a web/visual change needs checking — loads the page through the "eyes", reads rendered pixels at desktop + mobile, inspects console/network, returns a prioritized findings report. Read-only. |
+| **deploy-verifier** | after a deploy/merge, or any "is it live / did it deploy" claim — reads the host's production deployment (live commit SHA + build state) and the logged-out URL, confirms the intended commit is actually what visitors get, returns PASS / FAIL / UNVERIFIABLE with the SHA + HTTP evidence. Catches the "merged ≠ deployed" and "deployed ≠ the right build" traps. Read-only. |
 | **cogito-judge** | inside a council — compare several independent panel answers and return the Fusion-style deliberation (consensus / contradictions / unique insights / blind spots) + a recommended synthesis. Weighs, never re-answers. Read-only. |
 
 (An agent invokable by `subagent_type` only appears after the session reloads its
