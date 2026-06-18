@@ -1,10 +1,10 @@
 {
   "name": "cogito",
   "version": "0.1.0",
-  "description": "A metacognitive operating protocol with durable, self-maintaining memory. Bundles the cogito-protocol skill (assumptions, three-layer analysis, state files, the runnable verification gate, the lessons ledger + consolidate/decay maintenance, the CoALA memory taxonomy, the finish-line review) plus the adaptive-learning, web-build-loop and cogito-consolidate skills, the cogito-reviewer and design-qa subagents, and the SessionStart hooks that load the lessons ledger into every session, in any repo.",
+  "description": "A metacognitive operating protocol with durable, self-maintaining memory. Bundles the cogito-protocol skill (assumptions, three-layer analysis, state files, the runnable verification gate, the lessons ledger + consolidate/decay maintenance, the CoALA memory taxonomy, the finish-line review) plus the adaptive-learning, web-build-loop and cogito-consolidate skills, the cogito-reviewer, design-qa and deploy-verifier subagents, and the SessionStart hooks that load the lessons ledger into every session, in any repo.",
   "author": { "name": "Cogito" },
   "homepage": "https://github.com/COGITO-SUM-cloude/COGITO",
   "keywords": ["memory", "metacognition", "protocol", "lessons", "spaced-repetition", "agents"],
-  "agents": ["./.claude/agents/cogito-reviewer.md", "./.claude/agents/design-qa.md"],
+  "agents": ["./.claude/agents/cogito-reviewer.md", "./.claude/agents/design-qa.md", "./.claude/agents/deploy-verifier.md"],
   "hooks": "./hooks/hooks.json"
 }
