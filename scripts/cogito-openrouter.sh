@@ -24,7 +24,25 @@ set -uo pipefail
 # slugs stay as fallback. (NB: openrouter/fusion is a separate, PAID product — kept out
 # of this $0 chain on purpose.)
 DEFAULT_CHAIN="openrouter/free,nousresearch/hermes-3-llama-3.1-405b:free,nvidia/nemotron-3-nano-30b-a3b:free,google/gemma-4-31b-it:free,meta-llama/llama-3.3-70b-instruct:free,qwen/qwen3-next-80b-a3b-instruct:free"
-MODELS="${1:-${COGITO_OR_MODELS:-$DEFAULT_CHAIN}}"
+# Optional STRUCTURED OUTPUT: --schema <file.json> makes the model return JSON that
+# conforms to that JSON Schema (OpenRouter response_format: json_schema). Used by the
+# council so the non-Claude panelist returns the SAME shape as the Claude panelists
+# (skills/cogito-council/panelist.schema.json), making the panel machine-mergeable for
+# the judge. Without --schema, behaviour is unchanged (free text). The remaining
+# positional arg is still the model chain.
+SCHEMA_FILE=""
+POS=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --schema)   SCHEMA_FILE="${2:-}"; shift 2 || true ;;
+    --schema=*) SCHEMA_FILE="${1#--schema=}"; shift ;;
+    *)          POS+=("$1"); shift ;;
+  esac
+done
+MODELS="${POS[0]:-${COGITO_OR_MODELS:-$DEFAULT_CHAIN}}"
+if [ -n "$SCHEMA_FILE" ] && [ ! -f "$SCHEMA_FILE" ]; then
+  echo "cogito-openrouter: --schema file not found: $SCHEMA_FILE" >&2; exit 2
+fi
 
 if [ -z "${OPENROUTER_API_KEY:-}" ]; then
   echo "cogito-openrouter: no OPENROUTER_API_KEY set — skipping the non-Claude voice (council runs Claude-only)." >&2
@@ -36,14 +54,28 @@ if [ -z "$prompt" ]; then
   exit 2
 fi
 
-OPENROUTER_API_KEY="$OPENROUTER_API_KEY" COGITO_MODELS="$MODELS" COGITO_PROMPT="$prompt" python3 - <<'PY'
+OPENROUTER_API_KEY="$OPENROUTER_API_KEY" COGITO_MODELS="$MODELS" COGITO_PROMPT="$prompt" COGITO_SCHEMA_FILE="$SCHEMA_FILE" python3 - <<'PY'
 import os, sys, json, urllib.request, urllib.error
 key = os.environ["OPENROUTER_API_KEY"]
 models = [m.strip() for m in os.environ["COGITO_MODELS"].split(",") if m.strip()]
 prompt = os.environ["COGITO_PROMPT"]
+
+# Optional structured output: a JSON Schema file -> OpenRouter response_format. Models
+# that don't support it error out and the fallback chain simply tries the next one.
+response_format = None
+schema_file = os.environ.get("COGITO_SCHEMA_FILE", "")
+if schema_file:
+    with open(schema_file, encoding="utf-8") as f:
+        schema = json.load(f)
+    response_format = {"type": "json_schema",
+                       "json_schema": {"name": "cogito_response", "strict": True, "schema": schema}}
+
 last = "no models tried"
 for model in models:
-    body = json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode()
+    payload = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    if response_format:
+        payload["response_format"] = response_format
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",
         data=body,

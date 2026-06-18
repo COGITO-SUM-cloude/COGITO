@@ -39,15 +39,20 @@ repeatable.
    - **always add the non-Claude voice:** pipe the sharpened question through
      `scripts/cogito-openrouter.sh` and include its reply as one panelist — a free
      non-Claude model, the decorrelated juror that cures "one voice in triplicate".
-     It exits cleanly with no key set, so it is always safe to call. **Capture which
+     It exits cleanly with no key set, so it is always safe to call. For a
+     machine-mergeable panel, call it with
+     `--schema skills/cogito-council/panelist.schema.json` so its reply is JSON in the
+     shared panelist shape (§Structured output). **Capture which
      model actually answered** (the script prints `answered by <model>` on stderr):
      free models get silently rate-limited and swapped down the fallback chain, and
      the council must never mistake the fallback for the intended voice.
 3. **Judge — don't average.** Hand all panel answers to the **cogito-judge**
    subagent (or, until it has loaded, a `general-purpose` proxy carrying the judge
-   role). It returns the Fusion-style comparison: **consensus** (treat as
-   higher-confidence), **contradictions**, **coverage gaps**, **unique insights**,
-   **blind spots none caught**, and a recommended synthesis.
+   role). It returns the Fusion-style comparison as a **JSON verdict** (the schema in
+   `.claude/agents/cogito-judge.md`): **consensus** (treat as higher-confidence),
+   **contradictions**, **coverage gaps**, **unique insights**, **blind spots none
+   caught**, and a `recommended_synthesis` — machine-readable so step 4 folds it in
+   without re-parsing prose.
 4. **Synthesize + verify.** Write the final answer from the judge's analysis: lead
    with consensus, surface the live contradictions honestly, fold in the best
    unique insight, address the blind spots. Verify any grounded claim (§5b) before
@@ -67,6 +72,26 @@ inherit the same blind spots. When you can, run the judge on a DIFFERENT model t
 the panel — a different Claude model now (pass `model:` when spawning `cogito-judge`),
 a non-Claude model once a key exists. A decorrelated judge is the cheapest way to
 catch the "one voice in triplicate" the panel cannot see in itself.
+
+## Structured output (machine-mergeable panel)
+A council loses value when the judge has to re-parse five differently-shaped prose
+blobs. Give the whole panel ONE shape so the judge weighs fields, not formatting:
+
+- **Panelists → the panelist schema** (`skills/cogito-council/panelist.schema.json`):
+  `lens, answer, key_claims, grounding[], confidence, blind_spots[]`. Tell each
+  Claude panelist to return exactly that JSON object; the non-Claude voice returns it
+  natively when called with `--schema skills/cogito-council/panelist.schema.json`
+  (OpenRouter `response_format: json_schema`). Free models that can't do structured
+  output simply error and the script falls down the chain — so the panel degrades, it
+  never breaks.
+- **Judge → the judge schema** (in `.claude/agents/cogito-judge.md`):
+  `consensus[], contradictions[], coverage_gaps[], unique_insights[], blind_spots[],
+  recommended_synthesis, confidence, decorrelation_note`. The judge reads the
+  panelists' structured fields directly (e.g. compares their `grounding`), and step 4
+  reads `recommended_synthesis` without parsing prose.
+
+The shapes are deliberately Fusion's: when you upgrade to a real cross-provider panel
+later, the same two schemas carry over unchanged.
 
 ## Upgrade path (→ real OpenRouter Fusion, later)
 When a paid OpenRouter key — or a strong free non-Claude model — is available,
