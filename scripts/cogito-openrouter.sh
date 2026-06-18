@@ -19,7 +19,11 @@
 #   default chain via $COGITO_OR_MODELS, else: hermes-405b -> llama-3.3-70b -> qwen3-next-80b (all :free)
 set -uo pipefail
 
-DEFAULT_CHAIN="nousresearch/hermes-3-llama-3.1-405b:free,nvidia/nemotron-3-nano-30b-a3b:free,google/gemma-4-31b-it:free,meta-llama/llama-3.3-70b-instruct:free,qwen/qwen3-next-80b-a3b-instruct:free"
+# openrouter/free leads the chain: it auto-routes over whatever free models are live,
+# so a deprecated/rate-limited slug can't silence the non-Claude voice. Explicit free
+# slugs stay as fallback. (NB: openrouter/fusion is a separate, PAID product — kept out
+# of this $0 chain on purpose.)
+DEFAULT_CHAIN="openrouter/free,nousresearch/hermes-3-llama-3.1-405b:free,nvidia/nemotron-3-nano-30b-a3b:free,google/gemma-4-31b-it:free,meta-llama/llama-3.3-70b-instruct:free,qwen/qwen3-next-80b-a3b-instruct:free"
 MODELS="${1:-${COGITO_OR_MODELS:-$DEFAULT_CHAIN}}"
 
 if [ -z "${OPENROUTER_API_KEY:-}" ]; then
