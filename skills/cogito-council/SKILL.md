@@ -34,6 +34,13 @@ repeatable.
    - rotate lenses like **pragmatist / skeptic / first-principles / domain-expert
      / contrarian**, or roles natural to the question;
    - vary **effort** (a couple deep, one fast) and framing;
+   - **ground the research/domain lens in the live web:** when the question turns on
+     current facts (prices, versions, what's true *now*, who said what), the
+     research/domain-expert panelist MUST use its built-in web search/fetch tools and
+     cite sources — a `general-purpose` agent already has them, and it's free (no
+     OpenRouter paid web plugin). An un-searched "expert" answer on a time-sensitive
+     question is a guess; make that lens earn its name. Stale-fact risk is itself a
+     blind spot the panelist should name when it couldn't verify.
    - require each to ground its claims (a check, a source, a real constraint) and
      to name its own confidence and blind spots;
    - **always add the non-Claude voice:** pipe the sharpened question through
