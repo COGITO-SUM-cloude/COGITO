@@ -5,12 +5,15 @@ forgotten session. Each entry: the idea in plain words, its real name, one way t
 use it, and a recap cue for next time. We revisit these on purpose — that is how
 we beat forgetting.
 
-We also **schedule** the reviews (spaced repetition, Leitner ladder): each lesson
-carries `box:N due:YYYY-MM-DD`. A correct recall promotes it to a longer interval
-(boxes 1→2→3→4→5→6 = 1, 3, 7, 16, 35, 90 days); a miss resets it to box 1. At
-session start the most-overdue lesson's recap cue is surfaced automatically.
-`scripts/cogito-review.sh due` lists what's due; `… grade N pass|fail` records a
-review. (`box:0` = seeded, not yet in rotation.)
+We also **schedule** the reviews (spaced repetition, **FSRS-5** — the modern open
+standard, ~20-30% fewer reviews than Leitner for the same retention): each lesson
+carries `S=<stability,days> D=<difficulty,1-10> due:YYYY-MM-DD rev:YYYY-MM-DD`. A
+review updates S and D from how it went and how overdue it was, then schedules the
+next visit at ~0.90 recall. At session start the most-overdue lesson's recap cue is
+surfaced automatically. `scripts/cogito-review.sh due` lists what's due;
+`… grade N pass|fail` records a review (or the finer `again|hard|good|easy`).
+Legacy `box:N` lines still work — they seed FSRS and convert to `S=/D=` the next time
+that lesson is graded. (`box:0` / no S = seeded, not yet in rotation.)
 
 **Field in focus:** Neuroscience (started 2026-06-13) — current focus: **nootropics & brain chemistry** (proven vs. hyped).
 **How the user learns best:** by *deriving it with hints* — give a nudge + a question, let him reason it out (don't hand over the answer). Record **observations, not labels**.
