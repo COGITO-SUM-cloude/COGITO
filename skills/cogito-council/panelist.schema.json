@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lens", "answer", "key_claims", "grounding", "confidence", "blind_spots"],
+  "properties": {
+    "lens": {
+      "type": "string",
+      "description": "The panelist's assigned lens/role (e.g. pragmatist, skeptic, first-principles, domain-expert)."
+    },
+    "answer": {
+      "type": "string",
+      "description": "This panelist's INDEPENDENT answer to the question, in its own lens. Do not reference other panelists."
+    },
+    "key_claims": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The load-bearing claims behind the answer, one per item."
+    },
+    "grounding": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "For each key claim, the check, source, or real-world constraint that backs it. An ungrounded claim should say so."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "This panelist's own confidence in its answer."
+    },
+    "blind_spots": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What this lens may be missing or where it is weakest."
+    }
+  }
+}
