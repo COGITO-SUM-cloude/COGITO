@@ -65,6 +65,14 @@ good the prompt looks.
 confuses the model and buries the goal. The best prompt is the *shortest one that still
 pins the outcome* — add a technique only when its absence would cost quality.
 
+## Saved-prompt library — reuse, don't re-derive
+Before building from scratch, check `skills/prompt-architect/library/` — if a saved
+prompt fits the job (CMS edit-assistant, local-service copy, SEO metadata, lead reply,
+…), copy it and fill the placeholders instead of re-deriving. When you craft a NEW
+prompt that produced a good result on a recurring job, **save it there** in the same
+format (job → prompt → techniques used/left-out → acceptance test) and add it to the
+library `README.md`, so the best prompt compounds like a lesson does.
+
 ## Pairs with
 `cogito-council` when the prompt design itself is hard or high-stakes (panel different
 prompt strategies, judge them); the council's `panelist.schema.json` pattern when the
