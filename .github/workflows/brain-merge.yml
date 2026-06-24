@@ -1,0 +1,74 @@
+name: brain-merge-gate
+
+# Hub-side auto-merge gate for the shared brain (council "Step B").
+# Auto-merges ONLY provably-safe, append-only lesson PRs into LESSONS.md; anything that
+# edits/removes a line, carries `supersedes:`, touches another file (incl. SKILL.md or
+# this workflow), or isn't a well-formed lesson is left OPEN for the owner's one-tap.
+# The decision lives in scripts/cogito-gate-check.sh (locally tested via --selftest).
+#
+# SECURITY (why this is safe despite auto-merging to main):
+#   * pull_request_target -> the workflow AND the gate script always come from the
+#     TRUSTED base branch; a PR cannot ship a permissive gate or rewrite this file.
+#   * It NEVER checks out or runs PR code — it only reads the PR diff as DATA and
+#     fetches the gate script from the base commit. So even a hostile PR runs none of
+#     its own code here.
+#   * Fork PRs are skipped (left for the owner): only a push-access holder (the brain
+#     token) can open a same-repo proposal branch — the Sybil mitigation.
+#   * No third-party actions are used (nothing to pin) — only the GitHub-provided gh CLI.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'skills/cogito-protocol/LESSONS.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: brain-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    if: >-
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gate-check the diff and auto-merge if provably safe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # 1. Gate script from the TRUSTED base commit (never the PR head).
+          gh api "repos/$REPO/contents/scripts/cogito-gate-check.sh?ref=$BASE_SHA" \
+            --jq '.content' | base64 -d > /tmp/cogito-gate-check.sh
+
+          # 2. Decide on the PR diff — data only, no PR code is executed.
+          DECISION="$(gh pr diff "$PR" --patch | bash /tmp/cogito-gate-check.sh)"
+          echo "gate verdict: $DECISION"
+
+          STATE="$(gh pr view "$PR" --json state --jq .state)"
+          if [ "$STATE" != "OPEN" ]; then
+            echo "PR is $STATE — nothing to do."
+            exit 0
+          fi
+
+          # 3. Act on the verdict.
+          if [ "${DECISION:0:5}" = "MERGE" ]; then
+            if gh pr merge "$PR" --squash --delete-branch; then
+              gh pr comment "$PR" --body "🤖 Auto-merged by the brain gate — ${DECISION}. (Append-only lesson; reverting is one click if it shouldn't have landed.)"
+            else
+              gh pr comment "$PR" --body "The brain gate approved this (${DECISION}) but the merge was blocked — likely branch protection. Merge it by hand."
+            fi
+          else
+            gh pr comment "$PR" --body "Held for your review — ${DECISION}"
+            gh pr edit "$PR" --add-label "needs-owner-review" || true
+          fi

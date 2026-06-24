@@ -77,3 +77,22 @@ converge Stop hook (already trusted) → brain-only FF push to main → human re
 - ROOT two-line bug (`$(git || cd && pwd)` precedence) → appended to the ledger; symptom was at
   the HTTP layer, cause was shell operator precedence. The smooth rest of the build produced no
   other scar.
+
+## Continuation (same session) — CMS port + real-lesson test + the gate
+- **CMS brain control room (idkwhatimdoing):** `/dashboard/brain` wired from mock to real —
+  `src/lib/brain.ts` (anon drain + dedupe key identical to the shell drain) + `BrainLesson` Mongo
+  model + `/api/brain{,/drain,/decide}` + the page. Accept opens an append-only PR via a SEPARATE
+  least-privilege `COGITO_BRAIN_TOKEN` (never pushes main; never reaches the browser). Verified:
+  tsc + eslint + `next build` clean. Owner-side to switch on: set `COGITO_BRAIN_TOKEN` +
+  `COGITO_SATELLITE_OUTBOXES` in Vercel, redeploy. (commit 15462ce; e0fb226 added the outbox.)
+- **Real-lesson test — PASSED:** idkwhatimdoing recorded a real `cogito-outbox.md`; the shell drain
+  read it (local-path mode, since idk is private), DEDUPED the serverless lesson already in the
+  brain, staged 2 new, both accepted → ledger 91→93 with provenance, pushed (c823663). Proves the
+  shell-drain half end-to-end on REAL data. NOT covered: the CMS Accept→PR path (needs deploy +
+  token, owner-side).
+- **Hub-side auto-merge gate — council Step B:** `scripts/cogito-gate-check.sh` (decision logic,
+  10/10 selftest + verified on real diffs) + `.github/workflows/brain-merge.yml`. Auto-merges ONLY
+  append-only, ledger-only, format-valid lesson PRs; everything else (edits, removals, `supersedes:`,
+  SKILL.md, multi-file, non-lesson) is held for the owner's one-tap. `pull_request_target` so the
+  gate always runs from the trusted base; never executes PR code; fork PRs skipped. GOES LIVE only
+  once this workflow is merged to `main`.
