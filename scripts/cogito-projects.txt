@@ -1,0 +1,11 @@
+# cogito projects — what the control room's "Where it's live" dots check.
+# One project per line:  name | url | hint
+#   name : label shown on the dashboard
+#   url  : checked with a LOGGED-OUT HTTP request (no cookies, no auth) — the honest test
+#   hint : public | private   (a private app that answers with a login wall is still "up")
+# Lines starting with # and blank lines are ignored.
+Teacher | https://cogito-jfl-lol-projects.vercel.app | private
+Paint | https://paint-jfl-lol-projects.vercel.app | private
+The brain (repo) | https://github.com/cogito-sum-cloude/cogito | public
+# CMS (idk-whatimdoing): add its production URL here once confirmed, e.g.
+# CMS — this dashboard | https://<your-cms>.vercel.app | public

@@ -56,6 +56,35 @@ sys.exit(0 if re.search(pat,s) else 1)' 2>/dev/null; then
     echo "rm targeting a quoted root path (\"/\", '\$HOME', \"/*\") is catastrophic and unrecoverable — quoting it does not make it safe. Target a specific subdirectory, never the root."
     return
   fi
+
+  # 3. direct push to the protected main branch. The most-recorded git scar (lessons:
+  #    a main-push bundled into a chained command; consent inferred from a generic "go"
+  #    or an after-the-fact aside). A main push must be DELIBERATE and main-SPECIFIC,
+  #    never incidental or bundled. The sanctioned brain->main path is the converge Stop
+  #    hook, which runs in ITS OWN process and never passes through this PreToolUse hook —
+  #    so this rule does not touch it. Escape hatch for a genuine, approved push: the user
+  #    sets COGITO_ALLOW_MAIN_PUSH=1 for that one command.
+  if [ -z "${COGITO_ALLOW_MAIN_PUSH:-}" ] || [ "${COGITO_ALLOW_MAIN_PUSH:-}" = "0" ]; then
+    if printf '%s' "$res" | grep -qE '(^|[;&|(])[[:space:]]*git[[:space:]]+push([[:space:]]|$)' \
+       && printf '%s' "$res" | grep -qE '([[:space:]:+]|heads/)main([[:space:]]|$)'; then
+      echo "direct push to 'main' is gated. main is the one canonical brain, and a main push must be deliberate + main-specific — the top recorded git scar is a bundled/inferred main-push. Push your feature branch instead (the converge hook carries brain files to main on its own). If you TRULY mean to push main right now, re-run it with COGITO_ALLOW_MAIN_PUSH=1 set for that single command — and only on an explicit, main-specific yes from the user."
+      return
+    fi
+  fi
+
+  # 4. disabling TLS verification. #security scar: a "make the egress work" hack sent a
+  #    Bearer token over an UNVERIFIED TLS connection (MITM-exposable). This egress
+  #    intercepts TLS with a trusted CA at /root/.ccr/ca-bundle.crt — that is the
+  #    sanctioned path; verification must never be turned off, least of all with a token
+  #    in the environment. Covers curl -k/--insecure, wget --no-check-certificate, the
+  #    NO_VERIFY / REJECT_UNAUTHORIZED env switches, and git's http.sslVerify=false.
+  if printf '%s' "$res" | grep -qE '(^|[;&|(])[[:space:]]*curl\b[^;&|]*([[:space:]]--insecure([[:space:]]|$)|[[:space:]]-[[:alpha:]]*k[[:alpha:]]*([[:space:]]|$))' \
+     || printf '%s' "$res" | grep -qE 'wget\b[^;&|]*--no-check-certificate' \
+     || printf '%s' "$res" | grep -qE '(GIT_SSL_NO_VERIFY=([1-9]|true|yes|on)|NODE_TLS_REJECT_UNAUTHORIZED=0|PYTHONHTTPSVERIFY=0)' \
+     || printf '%s' "$res" | grep -qE 'http\.sslVerify[=[:space:]]+(false|0)([[:space:]]|$)'; then
+    echo "disabling TLS verification is blocked. The egress intercepts TLS with a trusted CA at /root/.ccr/ca-bundle.crt — pass --cacert (or set CURL_CA_BUNDLE), never -k / --insecure / *_NO_VERIFY / sslVerify=false. A secret sent over an unverified connection is MITM-exposable (a recorded #security scar): fail loudly and point at the CA instead."
+    return
+  fi
 }
 
 # ---- selftest: the contract, as runnable assertions -------------------------------
@@ -87,6 +116,25 @@ selftest() {
   check deny  'rm -rf "$HOME"'
   check deny  'rm -rf "/*"'
   check deny  'sudo rm -rf "/"'
+  # must DENY — direct push to the protected main branch (gated, lessons #96/#97/#80/#77)
+  check deny  'git push origin main'
+  check deny  'git push -u origin main'
+  check deny  'git push origin HEAD:main'
+  check deny  'git push --force origin main'
+  check deny  'git push -f origin +main'
+  check deny  'git push origin refs/heads/main'
+  check deny  'git push origin HEAD:refs/heads/main'
+  check deny  'git commit -m "x" && git push origin main'   # bundled main-push
+  check deny  'git add -A && git commit -m "y"; git push origin main'
+  # must DENY — disabling TLS verification (lesson #104: token over unverified TLS)
+  check deny  'curl -k https://example.com'
+  check deny  'curl --insecure https://example.com'
+  check deny  'curl -sSk https://example.com/api'
+  check deny  'wget --no-check-certificate https://example.com'
+  check deny  'GIT_SSL_NO_VERIFY=1 git fetch origin'
+  check deny  'NODE_TLS_REJECT_UNAUTHORIZED=0 node app.js'
+  check deny  'git -c http.sslVerify=false push origin feature'
+  check deny  'git config http.sslVerify false'
   # must ALLOW — safe commands, or merely MENTIONING a dangerous string
   check allow 'rm -rf "./build"'                     # quoted RELATIVE path — safe
   check allow 'git commit -m "done; rm -rf /"'       # operator + root INSIDE a message (not execution)
@@ -106,6 +154,21 @@ selftest() {
   check allow 'rm -rf node_modules'
   check allow 'git commit -m "m" && rm -rf ./dist'   # real rm of a specific dir
   check allow 'git status'
+  # must ALLOW — main-push rule must not over-block
+  check allow 'git push -u origin claude/optimistic-clarke-ptim35'  # feature branch
+  check allow 'git push origin feature'
+  check allow 'git push origin main-feature'         # a different branch, not main
+  check allow 'git push origin develop:develop'
+  check allow 'git commit -m "push to main later"'   # main only MENTIONED in a message
+  check allow 'git push origin main:staging'         # pushing FROM main TO staging (not to main)
+  COGITO_ALLOW_MAIN_PUSH=1 check allow 'git push origin main'        # explicit one-shot approval
+  # must ALLOW — TLS rule must not over-block
+  check allow 'curl -sS https://example.com'         # no -k
+  check allow 'curl --cacert /root/.ccr/ca-bundle.crt https://example.com'
+  check allow 'curl -K configfile https://example.com'   # -K (config) is not -k (insecure)
+  check allow 'git -c http.sslVerify=true push origin feature'
+  check allow 'echo "curl -k is banned here"'        # mention in a quoted string
+  check allow 'git commit -m "never use curl -k or NODE_TLS_REJECT_UNAUTHORIZED=0"'
   echo
   [ "$fails" -eq 0 ] && echo "selftest: ALL PASS" || { echo "selftest: $fails FAILED"; return 1; }
 }

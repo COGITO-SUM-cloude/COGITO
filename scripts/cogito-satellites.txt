@@ -1,0 +1,12 @@
+# cogito satellites — outbox sources for cogito-drain.sh, one per line.
+# Lines starting with # (and blank lines) are ignored.
+#
+# A source is one of:
+#   owner/repo              -> raw URL derived: raw.githubusercontent.com/<owner>/<repo>/{main|master}/cogito-outbox.md
+#   https://.../outbox.md   -> a full raw URL (any branch / filename)
+#   /path/to/cogito-outbox.md  -> a local file (use this for a PRIVATE satellite cloned locally;
+#                                 anonymous read only works for PUBLIC repos)
+#
+# Add a line below once you've confirmed the satellite repo is PUBLIC (or cloned locally).
+# Example (commented out until confirmed):
+# cogito-sum-cloude/HaloXBrainrot

@@ -1,0 +1,2 @@
+# cogito-drain.sh stages the review queue here as queue.json (gitignored — it is
+# transient session state, regenerable by re-running the drain against the outboxes).
